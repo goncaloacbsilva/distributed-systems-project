@@ -19,6 +19,10 @@ public class ClassObject {
     return _classState;
   }
 
+  public void set_classState(ClassesDefinitions.ClassState _classState) {
+    this._classState = _classState;
+  }
+
   public boolean isActive() {
     return _systemActive;
   }

@@ -13,6 +13,8 @@
 
     <properties>
         <mainClass>pt.ulisboa.tecnico.classes.professor.Professor</mainClass>
+        <server.host>localhost</server.host>
+        <server.port>2001</server.port>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -62,6 +64,8 @@
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
                     <arguments>
+                        <argument>${server.host}</argument>
+                        <argument>${server.port}</argument>
                     </arguments>
                 </configuration>
             </plugin>
