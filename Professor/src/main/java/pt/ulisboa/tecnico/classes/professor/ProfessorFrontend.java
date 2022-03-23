@@ -36,6 +36,7 @@ public class ProfessorFrontend {
                 .setCapacity(Integer.parseInt(command))
                 .build();
         ProfessorClassServer.OpenEnrollmentsResponse response = this.professorServiceBlockingStub.openEnrollments(request);
+        System.out.println(Stringify.format(response.getCode()));
     }
 
     public  void closeEnrollmentsCommand () {
@@ -44,6 +45,7 @@ public class ProfessorFrontend {
                         .CloseEnrollmentsRequest
                         .newBuilder()
                         .build());
+        System.out.println(Stringify.format(response.getCode()));
     }
 
     public  void cancelEnrollmentCommand (String command) {
@@ -52,6 +54,8 @@ public class ProfessorFrontend {
                 .setStudentId(command)
                 .build();
         ProfessorClassServer.CancelEnrollmentResponse response = this.professorServiceBlockingStub.cancelEnrollment(request);
+        System.out.println(Stringify.format(response.getCode()));
+
     }
 
     public  void exitCommand () {
