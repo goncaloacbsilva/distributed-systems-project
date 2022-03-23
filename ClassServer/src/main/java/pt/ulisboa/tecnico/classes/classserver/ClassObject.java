@@ -16,4 +16,6 @@ public class ClassObject {
   public ClassesDefinitions.ClassState getClassState() {
     return _classState;
   }
+
+
 }
