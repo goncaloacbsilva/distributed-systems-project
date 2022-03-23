@@ -16,4 +16,11 @@ public class ClassObject {
   public ClassesDefinitions.ClassState getClassState() {
     return _classState;
   }
+
+
+  public void set_classState(ClassesDefinitions.ClassState _classState) {
+    this._classState = _classState;
+  }
+
+
 }
