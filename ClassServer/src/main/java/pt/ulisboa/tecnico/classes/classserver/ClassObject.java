@@ -17,5 +17,4 @@ public class ClassObject {
     return _classState;
   }
 
-
 }
