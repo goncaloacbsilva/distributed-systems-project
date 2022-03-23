@@ -14,7 +14,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     }
 
     @Override
-    public void openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request, StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
+    public synchronized void openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request, StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
         if(this.class_state.getClassState().getOpenEnrollments()){
             ProfessorClassServer.OpenEnrollmentsResponse.Builder response = ProfessorClassServer.OpenEnrollmentsResponse.newBuilder();
             response.setCodeValue(ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_OPENED_VALUE);
@@ -37,7 +37,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     }
 
     @Override
-    public void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request, StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
+    public synchronized void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request, StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
 
         ClassesDefinitions.ClassState.Builder classStateBuilder = ClassesDefinitions.ClassState.newBuilder();
         classStateBuilder.setCapacity(this.class_state.getClassState().getCapacity());
@@ -64,7 +64,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     }
 
     @Override
-    public void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request, StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
+    public synchronized void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request, StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
         ProfessorClassServer.CancelEnrollmentResponse.Builder response = ProfessorClassServer.CancelEnrollmentResponse.newBuilder();
         String studentToRemoveId = request.getStudentId();
 
@@ -81,23 +81,19 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
         classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
         ClassesDefinitions.Student studentToDiscard;
+
         if(studentToRemoveIndex != -1) {
             studentToDiscard = classStateBuilder.getEnrolled(studentToRemoveIndex);
             classStateBuilder.removeEnrolled(studentToRemoveIndex);
             classStateBuilder.addDiscarded(studentToDiscard);
             this.class_state.set_classState(classStateBuilder.build());
             response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
-            responseObserver.onNext(response.build());
-            responseObserver.onCompleted();
         }
         else{
             response.setCodeValue(ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT_VALUE);
-            responseObserver.onNext(response.build());
-            responseObserver.onCompleted();
         }
-
-
-
+        responseObserver.onNext(response.build());
+        responseObserver.onCompleted();
 
 
     }
