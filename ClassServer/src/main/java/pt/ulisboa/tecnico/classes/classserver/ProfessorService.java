@@ -74,10 +74,11 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
         classStateBuilder.setOpenEnrollments(this.class_state.getClassState().getOpenEnrollments());
 
         int studentToRemoveIndex = -1;
-        for (int i = 0; i < this.class_state.getClassState().getEnrolledList().size(); i++) {
-            if (this.class_state.getClassState().getEnrolled(i).getStudentId().equals(studentToRemoveId))
+        for (int i = 0; i < this.class_state.getClassState().getEnrolledCount(); i++) {
+            if (this.class_state.getClassState().getEnrolled(i).getStudentId().equals(studentToRemoveId)) {
                 studentToRemoveIndex = i;
-            classStateBuilder.setEnrolled(i, this.class_state.getClassState().getEnrolled(i));
+            }
+            classStateBuilder.addEnrolled(i, this.class_state.getClassState().getEnrolled(i));
         }
 
         classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
