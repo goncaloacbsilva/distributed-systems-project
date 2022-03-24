@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.classes.professor;
 
 import io.grpc.ManagedChannel;
+import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
@@ -8,39 +9,37 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 public class ProfessorFrontend {
 
-    private ProfessorServiceGrpc.ProfessorServiceBlockingStub professorServiceBlockingStub;
+    private ProfessorServiceGrpc.ProfessorServiceBlockingStub _professorServiceBlockingStub;
 
     public ProfessorFrontend(ManagedChannel channel) {
-        this.professorServiceBlockingStub = ProfessorServiceGrpc.newBlockingStub(channel);
+        this._professorServiceBlockingStub = ProfessorServiceGrpc.newBlockingStub(channel);
     }
 
-    public  void listCommand (){
-        ProfessorClassServer.ListClassResponse response = this.professorServiceBlockingStub.listClass(
+    public ClassesDefinitions.ClassState listCommand() throws ResponseException {
+        ProfessorClassServer.ListClassResponse response = this._professorServiceBlockingStub.listClass(
                 ProfessorClassServer
                         .ListClassRequest
                         .newBuilder()
                         .build());
-        ClassesDefinitions.ClassState classState = response.getClassState();
+        if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
+            return  response.getClassState();
+        } else {
+            throw new ResponseException(response.getCode());
+        }
 
-        if(response.getCode().getNumber() == ClassesDefinitions.ResponseCode.OK_VALUE){
-            System.out.println(Stringify.format(classState));
-        }
-        else {
-            System.out.println(Stringify.format(response.getCode()));
-        }
     }
 
-    public  void openEnrollmentsCommand (String command) {
+    public void openEnrollmentsCommand(String command) {
 
         ProfessorClassServer.OpenEnrollmentsRequest request = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder()
                 .setCapacity(Integer.parseInt(command))
                 .build();
-        ProfessorClassServer.OpenEnrollmentsResponse response = this.professorServiceBlockingStub.openEnrollments(request);
+        ProfessorClassServer.OpenEnrollmentsResponse response = this._professorServiceBlockingStub.openEnrollments(request);
         System.out.println(Stringify.format(response.getCode()));
     }
 
-    public  void closeEnrollmentsCommand () {
-        ProfessorClassServer.CloseEnrollmentsResponse response = this.professorServiceBlockingStub.closeEnrollments(
+    public void closeEnrollmentsCommand() {
+        ProfessorClassServer.CloseEnrollmentsResponse response = this._professorServiceBlockingStub.closeEnrollments(
                 ProfessorClassServer
                         .CloseEnrollmentsRequest
                         .newBuilder()
@@ -48,17 +47,14 @@ public class ProfessorFrontend {
         System.out.println(Stringify.format(response.getCode()));
     }
 
-    public  void cancelEnrollmentCommand (String command) {
+    public void cancelEnrollmentCommand(String studentId) {
 
         ProfessorClassServer.CancelEnrollmentRequest request = ProfessorClassServer.CancelEnrollmentRequest.newBuilder()
-                .setStudentId(command)
+                .setStudentId(studentId)
                 .build();
-        ProfessorClassServer.CancelEnrollmentResponse response = this.professorServiceBlockingStub.cancelEnrollment(request);
+        ProfessorClassServer.CancelEnrollmentResponse response = this._professorServiceBlockingStub.cancelEnrollment(request);
         System.out.println(Stringify.format(response.getCode()));
 
     }
 
-    public  void exitCommand () {
-        System.exit(0);
-    }
 }

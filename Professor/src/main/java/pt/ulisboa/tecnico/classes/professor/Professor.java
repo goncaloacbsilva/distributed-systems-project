@@ -2,15 +2,18 @@ package pt.ulisboa.tecnico.classes.professor;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
-
 
 import java.util.Scanner;
 
 public class Professor {
+    public static final String LIST_COMMAND = "list";
+    public static final String OPEN_ENROLLMENTS_COMMAND = "openEnrollments";
+    public static final String CLOSE_ENROLLMENTS_COMMAND = "closeEnrollments";
+    public static final String CANCEL_ENROLLMENTS_COMMAND = "cancelEnrollment";
+    public static final String EXIT_COMMAND = "exit";
 
 
     public static void main(String[] args) {
@@ -41,29 +44,33 @@ public class Professor {
         while (true) {
             System.out.printf("%n> ");
             String command = lineReader.nextLine();
-            String variables[] = command.split(" ", 2);
+            String commandArgs[] = command.split(" ", 2);
 
-            if (variables[0].equals(ProfessorConstants.LIST_COMMAND)) {
-                frontend.listCommand();
+            if (commandArgs[0].equals(LIST_COMMAND)) {
+                try {
+                    ClassesDefinitions.ClassState classState = frontend.listCommand();
+                    System.out.println(Stringify.format(classState));
+                } catch (ResponseException exception) {
+                    System.out.println(Stringify.format(exception.getResponseCode()));
+                }
             }
 
-            if (variables[0].equals(ProfessorConstants.OPEN_ENROLLMENTS_COMMAND)) {
-                frontend.openEnrollmentsCommand(variables[1]);
+            if (commandArgs[0].equals(OPEN_ENROLLMENTS_COMMAND)) {
+                frontend.openEnrollmentsCommand(commandArgs[1]);
             }
 
-            if (variables[0].equals(ProfessorConstants.CLOSE_ENROLLMENTS_COMMAND)) {
+            if (commandArgs[0].equals(CLOSE_ENROLLMENTS_COMMAND)) {
                 frontend.closeEnrollmentsCommand();
             }
 
-            if (variables[0].equals(ProfessorConstants.CANCEL_ENROLLMENTS_COMMAND)) {
-
-                frontend.cancelEnrollmentCommand(variables[1]);
+            if (commandArgs[0].equals(CANCEL_ENROLLMENTS_COMMAND)) {
+                frontend.cancelEnrollmentCommand(commandArgs[1]);
             }
 
-            if (variables[0].equals(ProfessorConstants.EXIT_COMMAND)) {
+            if (commandArgs[0].equals(EXIT_COMMAND)) {
                 channel.shutdown();
                 lineReader.close();
-                frontend.exitCommand();
+                System.exit(0);
             }
 
         }
