@@ -30,7 +30,7 @@ public class ClassServer {
     ClassObject classObj = new ClassObject();
 
     final BindableService adminService = new AdminService(classObj, _enableLogging);
-    final BindableService professorService = new ProfessorService(classObj);
+    final BindableService professorService = new ProfessorService(classObj, _enableLogging);
     final BindableService studentService = new StudentService(classObj);
 
     Server server =
