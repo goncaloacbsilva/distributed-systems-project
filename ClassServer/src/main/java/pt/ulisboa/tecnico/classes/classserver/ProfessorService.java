@@ -27,7 +27,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
             classStateBuilder.setOpenEnrollments(true);
             classStateBuilder.addAllEnrolled(this.class_state.getClassState().getEnrolledList());
             classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
-            this.class_state.set_classState(classStateBuilder.build());
+            this.class_state.setClassState(classStateBuilder.build());
 
             response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
 
@@ -45,7 +45,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
         classStateBuilder.setOpenEnrollments(false);
         classStateBuilder.addAllEnrolled(this.class_state.getClassState().getEnrolledList());
         classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
-        this.class_state.set_classState(classStateBuilder.build());
+        this.class_state.setClassState(classStateBuilder.build());
 
         ProfessorClassServer.CloseEnrollmentsResponse.Builder response = ProfessorClassServer.CloseEnrollmentsResponse.newBuilder();
         response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
@@ -87,7 +87,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
             studentToDiscard = classStateBuilder.getEnrolled(studentToRemoveIndex);
             classStateBuilder.removeEnrolled(studentToRemoveIndex);
             classStateBuilder.addDiscarded(studentToDiscard);
-            this.class_state.set_classState(classStateBuilder.build());
+            this.class_state.setClassState(classStateBuilder.build());
             response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
         } else {
             response.setCodeValue(ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT_VALUE);

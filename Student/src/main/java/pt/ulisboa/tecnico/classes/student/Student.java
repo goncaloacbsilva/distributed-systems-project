@@ -38,7 +38,7 @@ public class Student {
       //exit
       if(EXIT_CMD.equals(line)){
         scanner.close();
-        break;
+        System.exit(0);
       }
 
       //enroll
@@ -48,7 +48,7 @@ public class Student {
 
       //list
       else if(LIST_CMD.equals(line)){
-        break;
+        frontend.List();
       }
 
     }
