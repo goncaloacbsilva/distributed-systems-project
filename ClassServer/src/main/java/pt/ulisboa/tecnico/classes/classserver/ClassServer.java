@@ -6,6 +6,8 @@ import io.grpc.ServerBuilder;
 
 public class ClassServer {
 
+  private static boolean _enableLogging = false;
+
   public static void main(String[] args) throws Exception {
     System.out.println(ClassServer.class.getSimpleName());
     System.out.printf("Received %d Argument(s)%n", args.length);
@@ -20,11 +22,14 @@ public class ClassServer {
     }
 
     Integer port = Integer.valueOf(args[0]);
+    if (args.length > 1) {
+      _enableLogging = args[1].equals("-debug");
+    }
 
     // Initialize Class Object and all the services
     ClassObject classObj = new ClassObject();
 
-    final BindableService adminService = new AdminService(classObj);
+    final BindableService adminService = new AdminService(classObj, _enableLogging);
     final BindableService professorService = new ProfessorService(classObj);
 
     Server server =
