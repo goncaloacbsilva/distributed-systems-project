@@ -4,10 +4,17 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+/** Class rpc server */
 public class ClassServer {
 
   private static boolean _enableLogging = false;
 
+  /**
+   * Class server entry point
+   *
+   * @param args
+   * @throws Exception
+   */
   public static void main(String[] args) throws Exception {
     System.out.println(ClassServer.class.getSimpleName());
     System.out.printf("Received %d Argument(s)%n", args.length);
@@ -34,8 +41,11 @@ public class ClassServer {
     final BindableService studentService = new StudentService(classObj);
 
     Server server =
-        ServerBuilder.forPort(port).addService(adminService).addService(professorService).addService(studentService).build();
-
+        ServerBuilder.forPort(port)
+            .addService(adminService)
+            .addService(professorService)
+            .addService(studentService)
+            .build();
 
     // Start the server
     server.start();

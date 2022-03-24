@@ -8,13 +8,18 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
 import java.util.Scanner;
 
+/** Admin client class */
 public class Admin {
 
   // Define Admin commands
-
   private static final String EXIT_CMD = "exit";
   private static final String DUMP_CMD = "dump";
 
+  /**
+   * Admin client entry point
+   * @param args
+   * @throws Exception
+   */
   public static void main(String[] args) throws Exception {
     System.out.println(Admin.class.getSimpleName());
     System.out.printf("Received %d Argument(s)%n", args.length);
