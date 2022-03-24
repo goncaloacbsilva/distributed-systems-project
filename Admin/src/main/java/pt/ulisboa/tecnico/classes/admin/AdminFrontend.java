@@ -20,7 +20,6 @@ public class AdminFrontend {
    public ClassState dump() throws StatusRuntimeException, ResponseException {
         AdminClassServer.DumpResponse response = stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
         if (response.getCode() == ResponseCode.OK) {
-            System.out.println(Stringify.format(response.getClassState()));
             return response.getClassState();
         } else {
             throw new ResponseException(response.getCode());

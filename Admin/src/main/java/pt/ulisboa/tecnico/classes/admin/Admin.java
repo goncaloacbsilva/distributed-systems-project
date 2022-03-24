@@ -51,6 +51,7 @@ public class Admin {
         }
       } else if (EXIT_CMD.equals(line)) {
         channel.shutdown();
+        scanner.close();
         System.exit(0);
       }
     }
