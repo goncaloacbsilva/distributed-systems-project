@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.classes.admin;
+package pt.ulisboa.tecnico.classes;
 
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 

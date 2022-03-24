@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.classes.admin;
 
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
+import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
