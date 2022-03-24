@@ -7,17 +7,12 @@ public class ClassObject {
 
   public ClassObject() { _classState = ClassesDefinitions.ClassState.getDefaultInstance(); }
 
-  public void setClassState(ClassesDefinitions.ClassState _classState) {
-    this._classState = _classState;
+  public synchronized void setClassState(ClassesDefinitions.ClassState classState) {
+    this._classState = classState;
   }
 
-  public ClassesDefinitions.ClassState getClassState() {
+  public synchronized ClassesDefinitions.ClassState getClassState() {
     return _classState;
-  }
-
-
-  public void set_classState(ClassesDefinitions.ClassState _classState) {
-    this._classState = _classState;
   }
 
 
