@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -24,10 +25,10 @@ public class ClassServer {
     ClassObject classObj = new ClassObject();
 
     // Mount new services like this:
-    // final BindableService myService = new MyServiceImpl(classObj);
+    final BindableService adminService = new AdminServiceImpl(classObj);
 
     Server server = ServerBuilder.forPort(port)
-            //.addService(myService)
+            .addService(adminService)
             .build();
 
     // Start the server
