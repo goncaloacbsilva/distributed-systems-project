@@ -9,11 +9,18 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/** Professor Service remote procedure calls */
 public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
   private ClassObject class_state;
   private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
 
+  /**
+   * Creates an instance of ProfessorService
+   *
+   * @param classObj shared class state object
+   * @param enableDebug debug flag
+   */
   public ProfessorService(ClassObject classObj, boolean enableDebug) {
 
     class_state = classObj;
@@ -24,6 +31,13 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     LOGGER.info("Started with debug mode enabled");
   }
 
+  /**
+   *
+   * "openEnrollments" remote procedure call. Receives openEnrollmentRequest from the professor client
+   * changes the class state and sends the adequate response code through a StreamObserver
+   * @param request
+   * @param responseObserver
+   */
   @Override
   public synchronized void openEnrollments(
       ProfessorClassServer.OpenEnrollmentsRequest request,
@@ -57,6 +71,13 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     responseObserver.onCompleted();
   }
 
+  /**
+   * "closeEnrollments" remote procedure call. Receives closeEnrollmentRequest from the professor client
+   *  changes the class state and sends the adequate response code through a StreamObserver
+   *
+   * @param request
+   * @param responseObserver
+   */
   @Override
   public synchronized void closeEnrollments(
       ProfessorClassServer.CloseEnrollmentsRequest request,
@@ -82,6 +103,13 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     responseObserver.onCompleted();
   }
 
+  /**
+   * "list" remote procedure call. Receives listRequest from the professor client and sends the internal
+   *  class state through a StreamObserver
+   *
+   * @param request
+   * @param responseObserver
+   */
   @Override
   public void listClass(
       ProfessorClassServer.ListClassRequest request,
@@ -100,6 +128,13 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     responseObserver.onCompleted();
   }
 
+  /**
+   * "cancelEnrollment" remote procedure call. Receives cancelEnrollmentRequest from the professor client
+   *  changes the class state and sends the adequate response code through a StreamObserver
+   *
+   * @param request
+   * @param responseObserver
+   */
   @Override
   public synchronized void cancelEnrollment(
       ProfessorClassServer.CancelEnrollmentRequest request,

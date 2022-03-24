@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
 import java.util.Scanner;
 
+/**  Professor client class */
 public class Professor {
     public static final String LIST_COMMAND = "list";
     public static final String OPEN_ENROLLMENTS_COMMAND = "openEnrollments";
@@ -16,6 +17,9 @@ public class Professor {
     public static final String EXIT_COMMAND = "exit";
 
 
+    /**
+     * @param args
+     */
     public static void main(String[] args) {
         System.out.println(Professor.class.getSimpleName());
         System.out.printf("Received %d Argument(s)%n", args.length);
