@@ -1,90 +1,82 @@
-#!/bin/bash
+#!/usr/bin/env bash
 RED='\033[0;31m'
+YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
+RESET='\033[0m'
 
-# 01-professor
-cd ../Professor || exit
-mvn -q exec:java <../tests/input/01-professor.in >../tests/output/01-professor.out 2>/dev/null
-
-NL=$(($(wc -l <../tests/expected/01-professor.out) + 1))
-if diff <(tail ../tests/output/01-professor.out -n "$NL") <(tail ../tests/expected/01-professor.out -n "$NL"); then
-  echo -e "${GREEN}01-professor: Success!"
+DIFF="diff"
+if command -v colordiff 2>/dev/null >/dev/null; then
+	DIFF="colordiff"
 else
-  echo -e "${RED}01-professor: Failed."
+	echo -e "${YELLOW}Install colordiff for colored diffs${RESET}"
+	echo
 fi
 
-# 02-student
-cd ../Student || exit
-mvn -q exec:java -Dexec.args="aluno1000 Cristina Ferreira" <../tests/input/02-student.in >../tests/output/02-student.out 2>/dev/null
+testone() {
+	local module="$1" # Professor/Client/Admin
+	local test_name="$2"
+	
+	local input_file="./input/${test_name}.in"
+	local expected_output_file="./expected/${test_name}.out"
+	local actual_output_file="./output/${test_name}.out"
+	
+	local expected_line_count="$(( $(wc -l < "${expected_output_file}") + 1))"
 
-NL=$(($(wc -l <../tests/expected/02-student.out) + 1))
-if diff <(tail ../tests/output/02-student.out -n "$NL") <(tail ../tests/expected/02-student.out -n "$NL"); then
-  echo -e "${GREEN}02-student: Success!"
-else
-  echo -e "${RED}02-student: Failed."
-fi
+	local student_id=""
+	local student_name=""
 
-# 03-student
-mvn -q exec:java -Dexec.args="aluno1001 Manuel Goucha" <../tests/input/03-student.in >../tests/output/03-student.out 2>/dev/null
+  if [ "$test_name" = "02-student" ]; then
+    # Cristina Ferreira
+    student_id="aluno1000"
+    student_name="'Cristina Ferreira'"
+  elif [ "$test_name" = "03-student" ]; then
+    # Goucha
+    student_id="aluno1001"
+    student_name="'Manuel Goucha'"
+  elif [ "$test_name" = "05-student" ]; then
+    student_id="aluno1001"
+    student_name="'Manuel Goucha'"
+  elif [ "$test_name" = "07-student" ]; then
+    # 3a pessoa
+    student_id="aluno1002"
+    student_name="'Castelo Branco'"
+  fi
 
-NL=$(($(wc -l <../tests/expected/03-student.out) + 1))
-if diff <(tail ../tests/output/03-student.out -n "$NL") <(tail ../tests/expected/03-student.out -n "$NL"); then
-  echo -e "${GREEN}03-student: Success!"
-else
-  echo -e "${RED}03-student: Failed."
-fi
+  if [ "$student_id" != "" ]; then
+    local args="-Dexec.args=localhost 2001 ${student_id} ${student_name}"
+    echo "Using ARGS: $args"
+    (
+    		set -e # exit (this subshell) on first error
+    		(cd ..; mvn -q -pl "${module}" exec:java "${args}") < "${input_file}" > "${actual_output_file}" 2>/dev/null
+    		"${DIFF}" -w "${expected_output_file}" <(tail -n "${expected_line_count}" "${actual_output_file}")
+    	)
+  else
+    (
+        set -e # exit (this subshell) on first error
+        (cd ..; mvn -q -pl "${module}" exec:java) < "${input_file}" > "${actual_output_file}" 2>/dev/null
+        "${DIFF}" -w "${expected_output_file}" <(tail -n "${expected_line_count}" "${actual_output_file}")
+      )
+  fi
+}
 
-# 04-professor
-cd ../Professor || exit
-mvn -q exec:java <../tests/input/04-professor.in >../tests/output/04-professor.out 2>/dev/null
+passed_count=0
+test_count=0
+for test_input_file in ./input/*.in; do
+	# we assume test names are in the format Stuff-TheModuleThatWeNeedToRun-Stuff...
+	test_name="$(basename "$test_input_file")" # extract filename from path
+	test_name="${test_name%.in}" # remove extension
+	module="$(echo "$test_name" | cut -d- -f2)" # extract module
+	# module="${module^}" # make first letter of module uppercase
+	module="$(tr '[:lower:]' '[:upper:]' <<< "${module:0:1}")${module:1}"
 
-NL=$(($(wc -l <../tests/expected/04-professor.out) + 1))
-if diff <(tail ../tests/output/04-professor.out -n "$NL") <(tail ../tests/expected/04-professor.out -n "$NL"); then
-  echo -e "${GREEN}04-professor: Success!"
-else
-  echo -e "${RED}04-professor: Failed."
-fi
+	test_count="$(( test_count + 1 ))"
 
-# 05-student
-cd ../Student || exit
-mvn -q exec:java -Dexec.args="aluno1001 Manuel Goucha" <../tests/input/05-student.in >../tests/output/05-student.out 2>/dev/null
+	if testone "$module" "$test_name"; then
+		passed_count="$(( passed_count + 1 ))"
+		echo -e "${GREEN}${test_name}: Success!${RESET}"
+	else
+		echo -e "${RED}${test_name}: Failed.${RESET}"
+	fi
+done
 
-NL=$(($(wc -l <../tests/expected/05-student.out) + 1))
-if diff <(tail ../tests/output/05-student.out -n "$NL") <(tail ../tests/expected/05-student.out -n "$NL"); then
-  echo -e "${GREEN}05-student: Success!"
-else
-  echo -e "${RED}05-student: Failed."
-fi
-
-# 06-professor
-cd ../Professor || exit
-mvn -q exec:java <../tests/input/06-professor.in >../tests/output/06-professor.out 2>/dev/null
-
-NL=$(($(wc -l <../tests/expected/06-professor.out) + 1))
-if diff <(tail ../tests/output/06-professor.out -n "$NL") <(tail ../tests/expected/06-professor.out -n "$NL"); then
-  echo -e "${GREEN}06-professor: Success!"
-else
-  echo -e "${RED}06-professor: Failed."
-fi
-
-# 07-student
-cd ../Student || exit
-mvn -q exec:java -Dexec.args="aluno1000 Cristina Ferreira" <../tests/input/07-student.in >../tests/output/07-student.out 2>/dev/null
-
-NL=$(($(wc -l <../tests/expected/07-student.out) + 1))
-if diff <(tail ../tests/output/07-student.out -n "$NL") <(tail ../tests/expected/07-student.out -n "$NL"); then
-  echo -e "${GREEN}07-student: Success!"
-else
-  echo -e "${RED}07-student: Failed."
-fi
-
-# 08-admin
-cd ../Admin || exit
-mvn -q exec:java <../tests/input/08-admin.in >../tests/output/08-admin.out 2>/dev/null
-
-NL=$(($(wc -l <../tests/expected/08-admin.out) + 1))
-if diff <(tail ../tests/output/08-admin.out -n "$NL") <(tail ../tests/expected/08-admin.out -n "$NL"); then
-  echo -e "${GREEN}08-admin: Success!"
-else
-  echo -e "${RED}08-admin: Failed."
-fi
+echo "Passed $passed_count of $test_count tests"

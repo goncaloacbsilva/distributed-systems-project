@@ -15,7 +15,7 @@ public class StudentFrontend {
 
     public StudentFrontend(ManagedChannel channel, String studentID, String studentName){
 
-        _stub = StudentServiceGrpc.newBlockingStub(channel);
+        this._stub = StudentServiceGrpc.newBlockingStub(channel);
         this._student = ClassesDefinitions.Student.newBuilder().setStudentId(studentID).setStudentName(studentName).build();
 
     }

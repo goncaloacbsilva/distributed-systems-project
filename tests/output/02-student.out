@@ -1,0 +1,28 @@
+Student
+Received 4 Argument(s)
+args[0] = localhost
+args[1] = 2001
+args[2] = aluno1000
+args[3] = Cristina Ferreira
+
+> ClassState{
+	capacity=1,
+	openEnrollments=true,
+	enrolled=[],
+	discarded=[]
+}
+
+> The action completed successfully.
+
+> ClassState{
+	capacity=1,
+	openEnrollments=true,
+	enrolled=[
+		Student{
+			Id='aluno1000',
+			Name='Cristina Ferreira'
+		}],
+	discarded=[]
+}
+
+> 
