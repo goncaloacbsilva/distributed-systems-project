@@ -25,7 +25,7 @@ public class ClassServer {
     ClassObject classObj = new ClassObject();
 
     // Mount new services like this:
-    final BindableService adminService = new AdminServiceImpl(classObj);
+    final BindableService adminService = new AdminService(classObj);
 
     Server server = ServerBuilder.forPort(port)
             .addService(adminService)

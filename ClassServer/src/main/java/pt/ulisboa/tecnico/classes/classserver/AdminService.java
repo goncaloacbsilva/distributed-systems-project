@@ -5,11 +5,11 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 
-public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
+public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
 
   private final ClassObject _classObj;
 
-  public AdminServiceImpl(ClassObject classObj) {
+  public AdminService(ClassObject classObj) {
     super();
     this._classObj = classObj;
   }
