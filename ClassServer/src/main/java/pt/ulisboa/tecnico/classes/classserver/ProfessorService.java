@@ -83,20 +83,25 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
       ProfessorClassServer.CloseEnrollmentsRequest request,
       StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
     LOGGER.info("Received closeEnrollments request");
-    LOGGER.info("Building new class state");
-    ClassesDefinitions.ClassState.Builder classStateBuilder =
-        ClassesDefinitions.ClassState.newBuilder();
-    classStateBuilder.setCapacity(this.class_state.getClassState().getCapacity());
-    classStateBuilder.setOpenEnrollments(false);
-    classStateBuilder.addAllEnrolled(this.class_state.getClassState().getEnrolledList());
-    classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
-    this.class_state.setClassState(classStateBuilder.build());
-    LOGGER.info("class state built");
-
     ProfessorClassServer.CloseEnrollmentsResponse.Builder response =
-        ProfessorClassServer.CloseEnrollmentsResponse.newBuilder();
-    response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
-    LOGGER.info("Set response as OK");
+            ProfessorClassServer.CloseEnrollmentsResponse.newBuilder();
+    if (!this.class_state.getClassState().getOpenEnrollments()){
+      response.setCodeValue(ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED_VALUE);
+    }
+    else{
+      LOGGER.info("Building new class state");
+      ClassesDefinitions.ClassState.Builder classStateBuilder =
+              ClassesDefinitions.ClassState.newBuilder();
+      classStateBuilder.setCapacity(this.class_state.getClassState().getCapacity());
+      classStateBuilder.setOpenEnrollments(false);
+      classStateBuilder.addAllEnrolled(this.class_state.getClassState().getEnrolledList());
+      classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
+      this.class_state.setClassState(classStateBuilder.build());
+      LOGGER.info("class state built");
+
+      response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
+      LOGGER.info("Set response as OK");
+    }
 
     LOGGER.info("Sending closeEnrollments response");
     responseObserver.onNext(response.build());
