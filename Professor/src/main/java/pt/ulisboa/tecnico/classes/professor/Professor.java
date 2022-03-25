@@ -8,7 +8,9 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
 import java.util.Scanner;
 
-/**  Professor client class */
+/**
+ * Professor client class
+ */
 public class Professor {
     public static final String LIST_COMMAND = "list";
     public static final String OPEN_ENROLLMENTS_COMMAND = "openEnrollments";
@@ -36,7 +38,6 @@ public class Professor {
 
         String host = String.valueOf(args[0]);
         Integer port = Integer.valueOf(args[1]);
-
 
 
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
