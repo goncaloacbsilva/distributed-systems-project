@@ -38,7 +38,7 @@ public class ClassServer {
 
     final BindableService adminService = new AdminService(classObj, _enableLogging);
     final BindableService professorService = new ProfessorService(classObj, _enableLogging);
-    final BindableService studentService = new StudentService(classObj);
+    final BindableService studentService = new StudentService(classObj, _enableLogging);
 
     Server server =
         ServerBuilder.forPort(port)
