@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
     private ClassObject class_state;
-    private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ProfessorService.class.getName());
 
     /**
      * Creates an instance of ProfessorService

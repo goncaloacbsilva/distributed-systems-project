@@ -8,7 +8,7 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 /**
- * This class abstracts all the stub calls executed by the Admin client
+ * This class abstracts all the stub calls executed by the Professor client
  */
 public class ProfessorFrontend {
 
