@@ -3,6 +3,9 @@ package pt.ulisboa.tecnico.classes.classserver;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import pt.ulisboa.tecnico.classes.NameServerFrontend;
+
+import java.util.ArrayList;
 
 /** Class rpc server */
 public class ClassServer {
@@ -24,17 +27,29 @@ public class ClassServer {
 
     if (args.length < 1) {
       System.err.println("Argument(s) missing!");
-      System.err.printf("Usage: java %s port%n", ClassServer.class.getName());
+      System.err.printf("Usage: java %s host port <qualifiers>%n", ClassServer.class.getName());
       return;
     }
 
-    Integer port = Integer.valueOf(args[0]);
-    if (args.length > 1) {
-      _enableLogging = args[1].equals("-debug");
+    String host = args[0];
+    Integer port = Integer.valueOf(args[1]);
+
+    ArrayList<String> qualifiers = new ArrayList<String>();
+
+    for (int i = 2; i < args.length - 1; i++) {
+      qualifiers.add(args[i]);
     }
 
-    // Initialize Class Object and all the services
+    if ("-debug".equals(args[args.length - 1])) {
+      _enableLogging = true;
+    } else {
+      qualifiers.add(args[args.length - 1]);
+    }
+
+    // Initialize Class Object, name server frontend and all the services
     ClassObject classObj = new ClassObject();
+
+    final NameServerFrontend nameServer = new NameServerFrontend();
 
     final BindableService adminService = new AdminService(classObj, _enableLogging);
     final BindableService professorService = new ProfessorService(classObj, _enableLogging);
@@ -46,6 +61,16 @@ public class ClassServer {
             .addService(professorService)
             .addService(studentService)
             .build();
+
+    server.getServices().forEach(serverService -> {
+      nameServer.registerServer(serverService.getServiceDescriptor().getName(), host+":"+port, qualifiers);
+    });
+
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      server.getServices().forEach(serverService -> {
+        nameServer.deleteServer(serverService.getServiceDescriptor().getName(), host+":"+port);
+      });
+    }));
 
     // Start the server
     server.start();
