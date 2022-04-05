@@ -2,13 +2,16 @@ package pt.ulisboa.tecnico.classes.professor;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpRequest;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -45,13 +48,11 @@ public class ProfessorFrontend {
      * @return ClassesDefinitions.ClassState
      * @throws ResponseException
      */
-    public ClassesDefinitions.ClassState listCommand() throws ResponseException {
+    public ClassState list() throws StatusRuntimeException, ResponseException {
         ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
+        DumpResponse response = stub.listClass(DumpRequest.getDefaultInstance());
 
-        ProfessorClassServer.ListClassResponse response =
-                stub.listClass(
-                        ProfessorClassServer.ListClassRequest.newBuilder().build());
-        if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
+        if (response.getCode() == ResponseCode.OK) {
             return response.getClassState();
         } else {
             throw new ResponseException(response.getCode());
@@ -62,30 +63,32 @@ public class ProfessorFrontend {
      * Sends a openEnrollment request to the server and changes the class state to allow enrollments
      * prints the response code
      *
-     * @param command
+     * @param capacity
      */
-    public void openEnrollmentsCommand(String command) {
+    public void openEnrollmentsCommand(int capacity) throws StatusRuntimeException, ResponseException {
         ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
 
-        ProfessorClassServer.OpenEnrollmentsRequest request =
-                ProfessorClassServer.OpenEnrollmentsRequest.newBuilder()
-                        .setCapacity(Integer.parseInt(command))
-                        .build();
-        ProfessorClassServer.OpenEnrollmentsResponse response =
-                stub.openEnrollments(request);
-        System.out.println(Stringify.format(response.getCode()));
+        ProfessorClassServer.OpenEnrollmentsRequest request = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder().setCapacity(capacity).build();
+        ProfessorClassServer.OpenEnrollmentsResponse response = stub.openEnrollments(request);
+
+        if (response.getCode() != ResponseCode.OK) {
+            throw new ResponseException(response.getCode());
+        }
     }
 
     /**
      * Sends a closeEnrollments request to the server and changes the class state to not
      * allow further enrollments, prints the response code
      */
-    public void closeEnrollmentsCommand() {
+    public void closeEnrollmentsCommand() throws StatusRuntimeException, ResponseException {
         ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-        ProfessorClassServer.CloseEnrollmentsResponse response =
-                stub.closeEnrollments(
-                        ProfessorClassServer.CloseEnrollmentsRequest.newBuilder().build());
-        System.out.println(Stringify.format(response.getCode()));
+
+        ProfessorClassServer.CloseEnrollmentsRequest request = ProfessorClassServer.CloseEnrollmentsRequest.getDefaultInstance();
+        ProfessorClassServer.CloseEnrollmentsResponse response = stub.closeEnrollments(request);
+
+        if (response.getCode() != ResponseCode.OK) {
+            throw new ResponseException(response.getCode());
+        }
     }
 
     /**
@@ -94,12 +97,14 @@ public class ProfessorFrontend {
      *
      * @param studentId
      */
-    public void cancelEnrollmentCommand(String studentId) {
+    public void cancelEnrollmentCommand(String studentId) throws StatusRuntimeException, ResponseException {
         ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-        ProfessorClassServer.CancelEnrollmentRequest request =
-                ProfessorClassServer.CancelEnrollmentRequest.newBuilder().setStudentId(studentId).build();
-        ProfessorClassServer.CancelEnrollmentResponse response =
-                stub.cancelEnrollment(request);
-        System.out.println(Stringify.format(response.getCode()));
+
+        ProfessorClassServer.CancelEnrollmentRequest request = ProfessorClassServer.CancelEnrollmentRequest.newBuilder().setStudentId(studentId).build();
+        ProfessorClassServer.CancelEnrollmentResponse response = stub.cancelEnrollment(request);
+
+        if (response.getCode() != ResponseCode.OK) {
+            throw new ResponseException(response.getCode());
+        }
     }
 }

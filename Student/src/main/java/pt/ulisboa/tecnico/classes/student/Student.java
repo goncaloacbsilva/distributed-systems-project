@@ -1,7 +1,5 @@
 package pt.ulisboa.tecnico.classes.student;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
@@ -48,25 +46,21 @@ public class Student {
 
             String line = scanner.nextLine();
 
-            // exit
-            if (EXIT_CMD.equals(line)) {
-                scanner.close();
-                System.exit(0);
-            }
+            try {
+                if (EXIT_CMD.equals(line)) {
+                    scanner.close();
+                    System.exit(0);
 
-            // enroll
-            else if (ENROLL_CMD.equals(line)) {
-                frontend.EnrollStudent();
-            }
+                } else if (ENROLL_CMD.equals(line)) {
+                    frontend.enrollStudent();
 
-            // list
-            else if (LIST_CMD.equals(line)) {
-                try {
-                    ClassesDefinitions.ClassState classState = frontend.List();
+                } else if (LIST_CMD.equals(line)) {
+                    ClassesDefinitions.ClassState classState = frontend.list();
                     System.out.println(Stringify.format(classState));
-                } catch (ResponseException exception) {
-                    System.out.println(Stringify.format(exception.getResponseCode()));
+
                 }
+            } catch (ResponseException exception) {
+                System.out.println(Stringify.format(exception.getResponseCode()));
             }
         }
     }

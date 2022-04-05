@@ -7,8 +7,9 @@ import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpRequest;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -45,8 +46,8 @@ public class AdminFrontend {
    */
   public ClassState dump() throws StatusRuntimeException, ResponseException {
     AdminServiceGrpc.AdminServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-    AdminClassServer.DumpResponse response =
-        stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
+    DumpResponse response = stub.dump(DumpRequest.getDefaultInstance());
+
     if (response.getCode() == ResponseCode.OK) {
       return response.getClassState();
     } else {

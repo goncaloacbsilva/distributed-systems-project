@@ -1,4 +1,18 @@
 Admin
 Received 0 Argument(s)
-Argument(s) missing!
-Usage: java pt.ulisboa.tecnico.classes.admin.Admin host port
+
+> ClassState{
+	capacity=0,
+	openEnrollments=false,
+	enrolled=[],
+	discarded=[]
+}
+
+> ClassState{
+	capacity=0,
+	openEnrollments=false,
+	enrolled=[],
+	discarded=[]
+}
+
+> 

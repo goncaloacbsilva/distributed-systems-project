@@ -35,16 +35,18 @@ public class Admin {
 
       String line = scanner.nextLine();
 
-      if (DUMP_CMD.equals(line)) {
-        try {
+      try {
+        if (DUMP_CMD.equals(line)) {
           ClassesDefinitions.ClassState classState = frontend.dump();
           System.out.println(Stringify.format(classState));
-        } catch (ResponseException exception) {
-          System.out.println(Stringify.format(exception.getResponseCode()));
+
+        } else if (EXIT_CMD.equals(line)) {
+          scanner.close();
+          System.exit(0);
+
         }
-      } else if (EXIT_CMD.equals(line)) {
-        scanner.close();
-        System.exit(0);
+      } catch (ResponseException exception) {
+        System.out.println(Stringify.format(exception.getResponseCode()));
       }
     }
   }

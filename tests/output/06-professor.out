@@ -1,2 +1,21 @@
 Professor
-Received 0 Argument(s)
+Received 2 Argument(s)
+args[0] = localhost
+args[1] = 2001
+
+> ClassState{
+	capacity=0,
+	openEnrollments=true,
+	enrolled=[],
+	discarded=[]
+}
+
+> 
+> ClassState{
+	capacity=0,
+	openEnrollments=false,
+	enrolled=[],
+	discarded=[]
+}
+
+> 

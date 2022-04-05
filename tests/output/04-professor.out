@@ -1,2 +1,24 @@
 Professor
-Received 0 Argument(s)
+Received 2 Argument(s)
+args[0] = localhost
+args[1] = 2001
+
+> ClassState{
+	capacity=0,
+	openEnrollments=true,
+	enrolled=[],
+	discarded=[]
+}
+
+> The student does not exist.
+
+> The student does not exist.
+
+> ClassState{
+	capacity=0,
+	openEnrollments=true,
+	enrolled=[],
+	discarded=[]
+}
+
+> 

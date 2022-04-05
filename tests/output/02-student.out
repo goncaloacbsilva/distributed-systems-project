@@ -1,8 +1,9 @@
 Student
-Received 2 Argument(s)
-args[0] = aluno1001
-args[1] = Manuel Goucha
-[ERROR] Failed to execute goal org.codehaus.mojo:exec-maven-plugin:3.0.0:java (default-cli) on project Student: An exception occured while executing the Java class. Index 3 out of bounds for length 2 -> [Help 1]
+Received 3 Argument(s)
+args[0] = aluno1000
+args[1] = Cristina
+args[2] = Ferreira
+[ERROR] Failed to execute goal org.codehaus.mojo:exec-maven-plugin:3.0.0:java (default-cli) on project Student: An exception occured while executing the Java class. Index 3 out of bounds for length 3 -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
 [ERROR] Re-run Maven using the -X switch to enable full debug logging.

@@ -1,7 +1,5 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
@@ -48,35 +46,32 @@ public class Professor {
             String command = lineReader.nextLine();
             String commandArgs[] = command.split(" ", 2);
 
-            if (commandArgs[0].equals(LIST_COMMAND)) {
-                try {
-                    ClassesDefinitions.ClassState classState = frontend.listCommand();
+            try {
+
+                if (commandArgs[0].equals(LIST_COMMAND)) {
+                    ClassesDefinitions.ClassState classState = frontend.list();
                     System.out.println(Stringify.format(classState));
-                } catch (ResponseException exception) {
-                    System.out.println(Stringify.format(exception.getResponseCode()));
+
+                } else if (commandArgs[0].equals(OPEN_ENROLLMENTS_COMMAND)) {
+                    frontend.openEnrollmentsCommand(Integer.parseInt(commandArgs[1]));
+
+                } else if (commandArgs[0].equals(CLOSE_ENROLLMENTS_COMMAND)) {
+                    frontend.closeEnrollmentsCommand();
+
+                } else if (commandArgs[0].equals(CANCEL_ENROLLMENTS_COMMAND)) {
+                    frontend.cancelEnrollmentCommand(commandArgs[1]);
+
+                } else if (commandArgs[0].equals(EXIT_COMMAND)) {
+                    lineReader.close();
+                    System.exit(0);
+
                 }
-            }
 
-            if (commandArgs[0].equals(OPEN_ENROLLMENTS_COMMAND)) {
-                frontend.openEnrollmentsCommand(commandArgs[1]);
-            }
-
-            if (commandArgs[0].equals(CLOSE_ENROLLMENTS_COMMAND)) {
-                frontend.closeEnrollmentsCommand();
-            }
-
-            if (commandArgs[0].equals(CANCEL_ENROLLMENTS_COMMAND)) {
-                frontend.cancelEnrollmentCommand(commandArgs[1]);
-            }
-
-            if (commandArgs[0].equals(EXIT_COMMAND)) {
-
-                lineReader.close();
-                System.exit(0);
+            } catch (ResponseException exception) {
+                System.out.println(Stringify.format(exception.getResponseCode()));
             }
 
         }
-
 
     }
 }

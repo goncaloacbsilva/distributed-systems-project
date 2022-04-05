@@ -1,15 +1,21 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.Stringify;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
+
+import java.util.logging.Logger;
 
 
 public class ClassStateWrapper {
-  private ClassesDefinitions.ClassState _classState;
-  private boolean _isActive;
+  private ClassState _classState;
+  private boolean _isActive = true;
+  private static final Logger LOGGER = Logger.getLogger(ClassStateWrapper.class.getName());
 
   /** Creates an instance of ClassStateWrapper. Initializes the class state with a default instance */
   public ClassStateWrapper() {
-    _classState = ClassesDefinitions.ClassState.getDefaultInstance();
+    _classState = ClassState.getDefaultInstance();
   }
 
   /**
@@ -17,7 +23,7 @@ public class ClassStateWrapper {
    *
    * @param classState new class state
    */
-  public synchronized void setClassState(ClassesDefinitions.ClassState classState) {
+  public synchronized void setClassState(ClassState classState) {
     this._classState = classState;
   }
 
@@ -26,7 +32,16 @@ public class ClassStateWrapper {
    *
    * @return ClassState
    */
-  public synchronized ClassesDefinitions.ClassState getClassState() {
+  public synchronized ClassState getClassState() {
     return _classState;
+  }
+
+  public synchronized DumpResponse dumpClassState() {
+    LOGGER.info("Executing dump request");
+    DumpResponse.Builder response = DumpResponse.newBuilder();
+    response.setClassState(this._classState);
+    response.setCode(ResponseCode.OK);
+    LOGGER.info("Sending dump response with class state: \n" + Stringify.format(response.getClassState()));
+    return response.build();
   }
 }

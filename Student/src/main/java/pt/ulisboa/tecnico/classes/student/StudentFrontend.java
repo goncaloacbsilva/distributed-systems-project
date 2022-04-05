@@ -2,14 +2,17 @@ package pt.ulisboa.tecnico.classes.student;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.Student;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpRequest;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +22,7 @@ public class StudentFrontend {
 
   private final NameServerFrontend _nameServer;
   private ManagedChannel _channel;
-  private final ClassesDefinitions.Student _student;
+  private final Student _student;
 
   /**
    * creates an instance of StudentFrontend
@@ -29,13 +32,8 @@ public class StudentFrontend {
    * @param studentName
    */
   public StudentFrontend(String studentID, String studentName) {
-
     this._nameServer = new NameServerFrontend();
-    this._student =
-        ClassesDefinitions.Student.newBuilder()
-            .setStudentId(studentID)
-            .setStudentName(studentName)
-            .build();
+    this._student = Student.newBuilder().setStudentId(studentID).setStudentName(studentName).build();
   }
 
   private StudentServiceGrpc.StudentServiceBlockingStub getNewStubWithQualifiers(List<String> qualifiers) {
@@ -48,15 +46,14 @@ public class StudentFrontend {
    * Sends an enroll request to the server and enrolls a student if is possible * prints the
    * response code
    */
-  public void EnrollStudent() {
+  public void enrollStudent() throws StatusRuntimeException, ResponseException {
     StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-    try {
-      StudentClassServer.EnrollRequest request =
-          StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
-      StudentClassServer.EnrollResponse response = stub.enroll(request);
-      System.out.println(Stringify.format(response.getCode()));
-    } catch (RuntimeException e) {
-      e.printStackTrace();
+
+    StudentClassServer.EnrollRequest request = StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
+    StudentClassServer.EnrollResponse response = stub.enroll(request);
+
+    if (response.getCode() != ResponseCode.OK) {
+      throw new ResponseException(response.getCode());
     }
   }
 
@@ -67,14 +64,13 @@ public class StudentFrontend {
    * @return
    * @throws ResponseException
    */
-  public ClassesDefinitions.ClassState List() throws ResponseException {
+  public ClassState list() throws StatusRuntimeException, ResponseException {
     StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-    StudentClassServer.ListClassResponse response =
-        stub.listClass(StudentClassServer.ListClassRequest.newBuilder().build());
+    DumpResponse response = stub.listClass(DumpRequest.getDefaultInstance());
 
-    if (response.getCode().getNumber() == ClassesDefinitions.ResponseCode.OK_VALUE)
+    if (response.getCode() == ResponseCode.OK) {
       return response.getClassState();
-    else {
+    } else {
       throw new ResponseException(response.getCode());
     }
   }

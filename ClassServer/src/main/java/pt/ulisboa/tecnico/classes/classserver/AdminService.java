@@ -1,9 +1,8 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.stub.StreamObserver;
-import pt.ulisboa.tecnico.classes.Stringify;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpRequest;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 
 import java.util.logging.Level;
@@ -40,22 +39,11 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
    * @param responseObserver
    */
   @Override
-  public void dump(
-      AdminClassServer.DumpRequest request,
-      StreamObserver<AdminClassServer.DumpResponse> responseObserver) {
+  public void dump(DumpRequest request, StreamObserver<DumpResponse> responseObserver) {
 
     LOGGER.info("Received dump request");
 
-    AdminClassServer.DumpResponse response =
-        AdminClassServer.DumpResponse.newBuilder()
-            .setClassState(_classObj.getClassState())
-            .setCode(ClassesDefinitions.ResponseCode.OK)
-            .build();
-
-    LOGGER.info(
-        "Sending dump response with class state: \n" + Stringify.format(response.getClassState()));
-
-    responseObserver.onNext(response);
+    responseObserver.onNext(this._classObj.dumpClassState());
     responseObserver.onCompleted();
   }
 }

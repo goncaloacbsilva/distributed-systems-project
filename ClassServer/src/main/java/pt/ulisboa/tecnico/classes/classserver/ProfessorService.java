@@ -1,8 +1,8 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.stub.StreamObserver;
-import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  */
 public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
-    private ClassStateWrapper class_state;
+    private ClassStateWrapper _classObj;
     private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
 
     /**
@@ -25,7 +25,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      */
     public ProfessorService(ClassStateWrapper classObj, boolean enableDebug) {
 
-        class_state = classObj;
+        _classObj = classObj;
         if (!enableDebug) {
             LOGGER.setLevel(Level.OFF);
         }
@@ -41,30 +41,24 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public synchronized void openEnrollments(
-            ProfessorClassServer.OpenEnrollmentsRequest request,
-            StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
+    public synchronized void openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request, StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
         LOGGER.info("Received openEnrollments request");
-        ProfessorClassServer.OpenEnrollmentsResponse.Builder response =
-                ProfessorClassServer.OpenEnrollmentsResponse.newBuilder();
-        if (this.class_state.getClassState().getOpenEnrollments()) {
-            response.setCodeValue(ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_OPENED_VALUE);
-            LOGGER.info("Set response as Enrollments already opened");
-        } else if (this.class_state.getClassState().getEnrolledList().size() >= request.getCapacity()) {
-            response.setCodeValue(ClassesDefinitions.ResponseCode.FULL_CLASS_VALUE);
-            LOGGER.info("Set response as Full class");
+        ProfessorClassServer.OpenEnrollmentsResponse.Builder response = ProfessorClassServer.OpenEnrollmentsResponse.newBuilder();
+
+        if (this._classObj.getClassState().getOpenEnrollments()) {
+            response.setCode(ResponseCode.ENROLLMENTS_ALREADY_OPENED);
+
+        } else if (this._classObj.getClassState().getEnrolledList().size() >= request.getCapacity()) {
+            response.setCode(ResponseCode.FULL_CLASS);
+
         } else {
             LOGGER.info("Building new class state");
-            ClassesDefinitions.ClassState.Builder classStateBuilder =
-                    ClassesDefinitions.ClassState.newBuilder();
-            classStateBuilder.setCapacity(request.getCapacity());
+            ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
             classStateBuilder.setOpenEnrollments(true);
-            classStateBuilder.addAllEnrolled(this.class_state.getClassState().getEnrolledList());
-            classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
-            this.class_state.setClassState(classStateBuilder.build());
-            LOGGER.info("class state built");
+            this._classObj.setClassState(classStateBuilder.build());
+            LOGGER.info("Class state built");
 
-            response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
+            response.setCode(ResponseCode.OK);
             LOGGER.info("Set response as OK");
         }
 
@@ -81,26 +75,20 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public synchronized void closeEnrollments(
-            ProfessorClassServer.CloseEnrollmentsRequest request,
-            StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
+    public synchronized void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request, StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
         LOGGER.info("Received closeEnrollments request");
-        ProfessorClassServer.CloseEnrollmentsResponse.Builder response =
-                ProfessorClassServer.CloseEnrollmentsResponse.newBuilder();
-        if (!this.class_state.getClassState().getOpenEnrollments()) {
-            response.setCodeValue(ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED_VALUE);
+        ProfessorClassServer.CloseEnrollmentsResponse.Builder response = ProfessorClassServer.CloseEnrollmentsResponse.newBuilder();
+
+        if (!this._classObj.getClassState().getOpenEnrollments()) {
+            response.setCode(ResponseCode.ENROLLMENTS_ALREADY_CLOSED);
+
         } else {
             LOGGER.info("Building new class state");
-            ClassesDefinitions.ClassState.Builder classStateBuilder =
-                    ClassesDefinitions.ClassState.newBuilder();
-            classStateBuilder.setCapacity(this.class_state.getClassState().getCapacity());
+            ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
             classStateBuilder.setOpenEnrollments(false);
-            classStateBuilder.addAllEnrolled(this.class_state.getClassState().getEnrolledList());
-            classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
-            this.class_state.setClassState(classStateBuilder.build());
-            LOGGER.info("class state built");
+            this._classObj.setClassState(classStateBuilder.build());
 
-            response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
+            response.setCode(ResponseCode.OK);
             LOGGER.info("Set response as OK");
         }
 
@@ -117,20 +105,11 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public void listClass(
-            ProfessorClassServer.ListClassRequest request,
-            StreamObserver<ProfessorClassServer.ListClassResponse> responseObserver) {
-        LOGGER.info("Received listClass request");
-        ProfessorClassServer.ListClassResponse.Builder response =
-                ProfessorClassServer.ListClassResponse.newBuilder();
-        response.setClassState(this.class_state.getClassState());
-        LOGGER.info(
-                "Sending list response with class state: \n" + Stringify.format(response.getClassState()));
-        response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
-        LOGGER.info("Set response as OK");
+    public void listClass(ClassesDefinitions.DumpRequest request, StreamObserver<ClassesDefinitions.DumpResponse> responseObserver) {
 
-        LOGGER.info("Sending listClass response");
-        responseObserver.onNext(response.build());
+        LOGGER.info("Received dump request");
+
+        responseObserver.onNext(this._classObj.dumpClassState());
         responseObserver.onCompleted();
     }
 
@@ -142,51 +121,38 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public synchronized void cancelEnrollment(
-            ProfessorClassServer.CancelEnrollmentRequest request,
-            StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
+    public synchronized void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request, StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
         LOGGER.info("Received cancelEnrollment request");
-        ProfessorClassServer.CancelEnrollmentResponse.Builder response =
-                ProfessorClassServer.CancelEnrollmentResponse.newBuilder();
+        ProfessorClassServer.CancelEnrollmentResponse.Builder response = ProfessorClassServer.CancelEnrollmentResponse.newBuilder();
+        ClassesDefinitions.ClassState currentClassState = this._classObj.getClassState();
         String studentToRemoveId = request.getStudentId();
 
-        LOGGER.info("Building new class state");
-        ClassesDefinitions.ClassState.Builder classStateBuilder =
-                ClassesDefinitions.ClassState.newBuilder();
-        classStateBuilder.setCapacity(this.class_state.getClassState().getCapacity());
-        classStateBuilder.setOpenEnrollments(this.class_state.getClassState().getOpenEnrollments());
-
         LOGGER.info("Searching for student");
-        int studentToRemoveIndex = -1;
-        for (int i = 0; i < this.class_state.getClassState().getEnrolledCount(); i++) {
-            if (this.class_state
-                    .getClassState()
-                    .getEnrolled(i)
-                    .getStudentId()
-                    .equals(studentToRemoveId)) {
-                studentToRemoveIndex = i;
-            }
-            classStateBuilder.addEnrolled(i, this.class_state.getClassState().getEnrolled(i));
-        }
-        LOGGER.info("Searching over");
 
-        classStateBuilder.addAllDiscarded(this.class_state.getClassState().getDiscardedList());
-        ClassesDefinitions.Student studentToDiscard;
+        ClassesDefinitions.Student studentToDiscard = currentClassState.getEnrolledList()
+                .stream()
+                .filter(student -> studentToRemoveId.equals(student.getStudentId()))
+                .findAny()
+                .orElse(null);
 
-        if (studentToRemoveIndex != -1) {
+        if (studentToDiscard != null) {
             LOGGER.info("Removing student from enrolled and adding to discarded");
-            studentToDiscard = classStateBuilder.getEnrolled(studentToRemoveIndex);
-            classStateBuilder.removeEnrolled(studentToRemoveIndex);
-            classStateBuilder.addDiscarded(studentToDiscard);
-            this.class_state.setClassState(classStateBuilder.build());
-            LOGGER.info("class state built");
-            response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
-            LOGGER.info("Set response as OK");
+            LOGGER.info("Building new class state");
+            ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
 
+            classStateBuilder.removeEnrolled(currentClassState.getEnrolledList().indexOf(studentToDiscard));
+            classStateBuilder.addDiscarded(studentToDiscard);
+
+            this._classObj.setClassState(classStateBuilder.build());
+            LOGGER.info("Class state built");
+
+            response.setCode(ResponseCode.OK);
+            LOGGER.info("Set response as OK");
         } else {
-            response.setCodeValue(ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT_VALUE);
+            response.setCode(ResponseCode.NON_EXISTING_STUDENT);
             LOGGER.info("Set response as non existing student");
         }
+
         LOGGER.info("Sending cancelEnrollment response");
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();

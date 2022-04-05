@@ -19,13 +19,6 @@ message CloseEnrollmentsResponse {
   ResponseCode code = 1;
 }
 
-message ListClassRequest {}
-
-message ListClassResponse {
-  ResponseCode code = 1;
-  ClassState classState = 2;
-}
-
 message CancelEnrollmentRequest {
   string studentId = 2;
 }
@@ -37,6 +30,6 @@ message CancelEnrollmentResponse {
 service ProfessorService {
   rpc openEnrollments(OpenEnrollmentsRequest) returns (OpenEnrollmentsResponse);
   rpc closeEnrollments(CloseEnrollmentsRequest) returns (CloseEnrollmentsResponse);
-  rpc listClass(ListClassRequest) returns (ListClassResponse);
+  rpc listClass(DumpRequest) returns (DumpResponse);
   rpc cancelEnrollment(CancelEnrollmentRequest) returns (CancelEnrollmentResponse);
 }
