@@ -47,7 +47,7 @@ public class ClassServer {
     }
 
     // Initialize Class Object, name server frontend and all the services
-    ClassObject classObj = new ClassObject();
+    ClassStateWrapper classObj = new ClassStateWrapper();
 
     final NameServerFrontend nameServer = new NameServerFrontend();
 

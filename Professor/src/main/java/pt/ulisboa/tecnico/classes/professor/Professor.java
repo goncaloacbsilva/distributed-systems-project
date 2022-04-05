@@ -39,10 +39,7 @@ public class Professor {
         String host = String.valueOf(args[0]);
         Integer port = Integer.valueOf(args[1]);
 
-
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-
-        ProfessorFrontend frontend = new ProfessorFrontend(channel);
+        ProfessorFrontend frontend = new ProfessorFrontend();
 
         Scanner lineReader = new Scanner(System.in);
 
@@ -73,7 +70,7 @@ public class Professor {
             }
 
             if (commandArgs[0].equals(EXIT_COMMAND)) {
-                channel.shutdown();
+
                 lineReader.close();
                 System.exit(0);
             }

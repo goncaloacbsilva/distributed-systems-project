@@ -1,26 +1,38 @@
 package pt.ulisboa.tecnico.classes.admin;
 
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 /** This class abstracts all the stub calls executed by the Admin client */
 public class AdminFrontend {
 
-  private final AdminServiceGrpc.AdminServiceBlockingStub stub;
+  private ManagedChannel _channel;
+  private final NameServerFrontend _nameServer;
+
 
   /**
    * Creates an instance of AdminFrontend
    *
-   * @param channel gRPC channel
    * @see AdminFrontend
    */
-  public AdminFrontend(ManagedChannel channel) {
-    stub = AdminServiceGrpc.newBlockingStub(channel);
+  public AdminFrontend() {
+    this._nameServer = new NameServerFrontend();
+  }
+
+  private AdminServiceGrpc.AdminServiceBlockingStub getNewStubWithQualifiers(List<String> qualifiers) {
+    String[] address = _nameServer.lookup(AdminServiceGrpc.SERVICE_NAME, qualifiers).getAddress().split(":");
+    this._channel = ManagedChannelBuilder.forAddress(address[0], Integer.valueOf(address[1])).idleTimeout(2, TimeUnit.SECONDS).usePlaintext().build();
+    return AdminServiceGrpc.newBlockingStub(this._channel);
   }
 
   /**
@@ -32,6 +44,7 @@ public class AdminFrontend {
    * @throws ResponseException
    */
   public ClassState dump() throws StatusRuntimeException, ResponseException {
+    AdminServiceGrpc.AdminServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
     AdminClassServer.DumpResponse response =
         stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
     if (response.getCode() == ResponseCode.OK) {

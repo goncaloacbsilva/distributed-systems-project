@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 /** Admin Service remote procedure calls */
 public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
 
-  private final ClassObject _classObj;
+  private final ClassStateWrapper _classObj;
   private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
 
   /**
@@ -21,7 +21,7 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
    * @param classObj shared class state object
    * @param enableDebug debug flag
    */
-  public AdminService(ClassObject classObj, boolean enableDebug) {
+  public AdminService(ClassStateWrapper classObj, boolean enableDebug) {
     super();
     this._classObj = classObj;
 

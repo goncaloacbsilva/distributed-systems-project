@@ -2,12 +2,13 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
-/** Internal class state wrapper */
-public class ClassObject {
-  private ClassesDefinitions.ClassState _classState;
 
-  /** Creates an instance of ClassObject. Initializes the class state with a default instance */
-  public ClassObject() {
+public class ClassStateWrapper {
+  private ClassesDefinitions.ClassState _classState;
+  private boolean _isActive;
+
+  /** Creates an instance of ClassStateWrapper. Initializes the class state with a default instance */
+  public ClassStateWrapper() {
     _classState = ClassesDefinitions.ClassState.getDefaultInstance();
   }
 

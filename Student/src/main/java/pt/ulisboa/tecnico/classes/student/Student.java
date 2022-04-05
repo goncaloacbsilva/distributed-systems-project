@@ -38,10 +38,7 @@ public class Student {
         final String studentID = args[2];
         final String studentName = args[3];
 
-        final ManagedChannel channel =
-                ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-
-        final StudentFrontend frontend = new StudentFrontend(channel, studentID, studentName);
+        final StudentFrontend frontend = new StudentFrontend(studentID, studentName);
 
         Scanner scanner = new Scanner(System.in);
 

@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  */
 public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
-    private ClassObject class_state;
+    private ClassStateWrapper class_state;
     private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
 
     /**
@@ -23,7 +23,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param classObj    shared class state object
      * @param enableDebug debug flag
      */
-    public ProfessorService(ClassObject classObj, boolean enableDebug) {
+    public ProfessorService(ClassStateWrapper classObj, boolean enableDebug) {
 
         class_state = classObj;
         if (!enableDebug) {

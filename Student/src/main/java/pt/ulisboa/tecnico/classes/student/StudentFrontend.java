@@ -1,17 +1,24 @@
 package pt.ulisboa.tecnico.classes.student;
 
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 /** This class abstracts all the stub calls executed by the Student client */
 public class StudentFrontend {
 
-  private final StudentServiceGrpc.StudentServiceBlockingStub _stub;
+  private final NameServerFrontend _nameServer;
+  private ManagedChannel _channel;
   private final ClassesDefinitions.Student _student;
 
   /**
@@ -21,9 +28,9 @@ public class StudentFrontend {
    * @param studentID
    * @param studentName
    */
-  public StudentFrontend(ManagedChannel channel, String studentID, String studentName) {
+  public StudentFrontend(String studentID, String studentName) {
 
-    this._stub = StudentServiceGrpc.newBlockingStub(channel);
+    this._nameServer = new NameServerFrontend();
     this._student =
         ClassesDefinitions.Student.newBuilder()
             .setStudentId(studentID)
@@ -31,15 +38,22 @@ public class StudentFrontend {
             .build();
   }
 
+  private StudentServiceGrpc.StudentServiceBlockingStub getNewStubWithQualifiers(List<String> qualifiers) {
+    String[] address = _nameServer.lookup(StudentServiceGrpc.SERVICE_NAME, qualifiers).getAddress().split(":");
+    this._channel = ManagedChannelBuilder.forAddress(address[0], Integer.valueOf(address[1])).idleTimeout(2, TimeUnit.SECONDS).usePlaintext().build();
+    return StudentServiceGrpc.newBlockingStub(this._channel);
+  }
+
   /**
    * Sends an enroll request to the server and enrolls a student if is possible * prints the
    * response code
    */
   public void EnrollStudent() {
+    StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
     try {
       StudentClassServer.EnrollRequest request =
           StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
-      StudentClassServer.EnrollResponse response = this._stub.enroll(request);
+      StudentClassServer.EnrollResponse response = stub.enroll(request);
       System.out.println(Stringify.format(response.getCode()));
     } catch (RuntimeException e) {
       e.printStackTrace();
@@ -54,9 +68,9 @@ public class StudentFrontend {
    * @throws ResponseException
    */
   public ClassesDefinitions.ClassState List() throws ResponseException {
-
+    StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
     StudentClassServer.ListClassResponse response =
-        this._stub.listClass(StudentClassServer.ListClassRequest.newBuilder().build());
+        stub.listClass(StudentClassServer.ListClassRequest.newBuilder().build());
 
     if (response.getCode().getNumber() == ClassesDefinitions.ResponseCode.OK_VALUE)
       return response.getClassState();

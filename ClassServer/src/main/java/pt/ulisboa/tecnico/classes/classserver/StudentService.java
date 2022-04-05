@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
-    private ClassObject object;
+    private ClassStateWrapper object;
     private static final Logger LOGGER = Logger.getLogger(StudentService.class.getName());
 
     /**
@@ -25,7 +25,7 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param obj         shared object
      * @param enableDebug debug flag
      */
-    public StudentService(ClassObject obj, boolean enableDebug) {
+    public StudentService(ClassStateWrapper obj, boolean enableDebug) {
 
         this.object = obj;
 
