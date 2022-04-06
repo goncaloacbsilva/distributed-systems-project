@@ -13,6 +13,8 @@ public class Admin {
   // Define Admin commands
   private static final String EXIT_CMD = "exit";
   private static final String DUMP_CMD = "dump";
+  private static final String ACTIVATE_CMD = "activate";
+  private static final String DEACTIVATE_CMD = "deactivate";
 
   /**
    * Admin client entry point
@@ -34,17 +36,37 @@ public class Admin {
       System.out.printf("%n> ");
 
       String line = scanner.nextLine();
+      String commandArgs[] = line.split(" ", 2);
+      String command = commandArgs[0];
+      String qualifier;
 
       try {
-        if (DUMP_CMD.equals(line)) {
-          ClassesDefinitions.ClassState classState = frontend.dump();
-          System.out.println(Stringify.format(classState));
 
-        } else if (EXIT_CMD.equals(line)) {
-          scanner.close();
-          System.exit(0);
+        switch (command) {
+
+          case DUMP_CMD -> {
+            qualifier = commandArgs[1];
+            ClassesDefinitions.ClassState classState = frontend.dump(List.of(qualifier));
+            System.out.println(Stringify.format(classState));
+          }
+
+          case ACTIVATE_CMD -> {
+            qualifier = commandArgs[1];
+            System.out.println(Stringify.format(frontend.activate(List.of(qualifier))));
+          }
+
+          case DEACTIVATE_CMD -> {
+            qualifier = commandArgs[1];
+            System.out.println(Stringify.format(frontend.deactivate(List.of(qualifier))));
+          }
+
+          case EXIT_CMD -> {
+            scanner.close();
+            System.exit(0);
+          }
 
         }
+
       } catch (ResponseException exception) {
         System.out.println(Stringify.format(exception.getResponseCode()));
       }

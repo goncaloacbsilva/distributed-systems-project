@@ -9,6 +9,7 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class AdminFrontend {
 
   private ManagedChannel _channel;
   private final NameServerFrontend _nameServer;
+  private AdminServiceGrpc.AdminServiceBlockingStub _stub;
 
 
   /**
@@ -30,10 +32,12 @@ public class AdminFrontend {
     this._nameServer = new NameServerFrontend();
   }
 
-  private AdminServiceGrpc.AdminServiceBlockingStub getNewStubWithQualifiers(List<String> qualifiers) {
-    String[] address = _nameServer.lookup(AdminServiceGrpc.SERVICE_NAME, qualifiers).getAddress().split(":");
-    this._channel = ManagedChannelBuilder.forAddress(address[0], Integer.valueOf(address[1])).idleTimeout(2, TimeUnit.SECONDS).usePlaintext().build();
-    return AdminServiceGrpc.newBlockingStub(this._channel);
+  private void getNewStubWithQualifiers(List<String> qualifiers) {
+    if (_channel != null) {
+      _channel.shutdown();
+    }
+    _channel = ManagedChannelBuilder.forTarget(_nameServer.lookup(AdminServiceGrpc.SERVICE_NAME, qualifiers).getAddress()).usePlaintext().build();
+    this._stub = AdminServiceGrpc.newBlockingStub(_channel);
   }
 
   /**
@@ -44,14 +48,28 @@ public class AdminFrontend {
    * @throws StatusRuntimeException
    * @throws ResponseException
    */
-  public ClassState dump() throws StatusRuntimeException, ResponseException {
-    AdminServiceGrpc.AdminServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-    AdminClassServer.DumpResponse response = stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
+  public ClassState dump(List<String> qualifiers) throws StatusRuntimeException, ResponseException {
+    getNewStubWithQualifiers(qualifiers);
+    AdminClassServer.DumpResponse response = _stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
 
     if (response.getCode() == ResponseCode.OK) {
       return response.getClassState();
     } else {
       throw new ResponseException(response.getCode());
     }
+  }
+
+  public ResponseCode activate(List<String> qualifiers) throws StatusRuntimeException {
+    getNewStubWithQualifiers(qualifiers);
+    AdminClassServer.ActivateResponse response = _stub.activate(AdminClassServer.ActivateRequest.getDefaultInstance());
+
+    return response.getCode();
+  }
+
+  public ResponseCode deactivate(List<String> qualifiers) throws StatusRuntimeException {
+    getNewStubWithQualifiers(qualifiers);
+    AdminClassServer.DeactivateResponse response = _stub.deactivate(AdminClassServer.DeactivateRequest.getDefaultInstance());
+
+    return response.getCode();
   }
 }

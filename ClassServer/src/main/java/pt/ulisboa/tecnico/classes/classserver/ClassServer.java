@@ -6,11 +6,13 @@ import io.grpc.ServerBuilder;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /** Class rpc server */
 public class ClassServer {
 
   private static boolean _enableLogging = false;
+  private static HashMap<String, Boolean> _properties;
 
   /**
    * Class server entry point
@@ -46,14 +48,18 @@ public class ClassServer {
       qualifiers.add(args[args.length - 1]);
     }
 
+    _properties = new HashMap<String, Boolean>();
+    _properties.put("isActive", true);
+    _properties.put("isPrimary", qualifiers.contains("P"));
+
     // Initialize Class Object, name server frontend and all the services
     ClassStateWrapper classObj = new ClassStateWrapper();
 
     final NameServerFrontend nameServer = new NameServerFrontend();
 
-    final BindableService adminService = new AdminService(classObj, _enableLogging);
-    final BindableService professorService = new ProfessorService(classObj, _enableLogging);
-    final BindableService studentService = new StudentService(classObj, _enableLogging);
+    final BindableService adminService = new AdminService(classObj, _enableLogging, _properties);
+    final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties);
+    final BindableService studentService = new StudentService(classObj, _enableLogging, _properties);
 
     Server server =
         ServerBuilder.forPort(port)
