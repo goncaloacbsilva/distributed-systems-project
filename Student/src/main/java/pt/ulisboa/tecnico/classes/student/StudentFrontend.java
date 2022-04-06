@@ -9,6 +9,7 @@ import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class StudentFrontend {
 
   private final NameServerFrontend _nameServer;
-  private ManagedChannel _channel;
+  private StudentServiceGrpc.StudentServiceBlockingStub _stub;
   private final Student _student;
 
   /**
@@ -33,9 +34,8 @@ public class StudentFrontend {
     this._student = Student.newBuilder().setStudentId(studentID).setStudentName(studentName).build();
   }
 
-  private StudentServiceGrpc.StudentServiceBlockingStub getNewStubWithQualifiers(List<String> qualifiers) {
-    this._channel = _nameServer.getChannel(StudentServiceGrpc.SERVICE_NAME, qualifiers);
-    return StudentServiceGrpc.newBlockingStub(this._channel);
+  private void getNewStubWithQualifiers(List<String> qualifiers, boolean previousIsInactive) {
+    this._stub = StudentServiceGrpc.newBlockingStub(_nameServer.getChannel(StudentServiceGrpc.SERVICE_NAME, qualifiers, previousIsInactive));
   }
 
   /**
@@ -43,10 +43,15 @@ public class StudentFrontend {
    * response code
    */
   public ResponseCode enrollStudent() throws StatusRuntimeException, ResponseException {
-    StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
+    getNewStubWithQualifiers(List.of("P"), false);
 
     StudentClassServer.EnrollRequest request = StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
-    StudentClassServer.EnrollResponse response = stub.enroll(request);
+    StudentClassServer.EnrollResponse response = _stub.enroll(request);
+
+    if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+      getNewStubWithQualifiers(List.of("P"), true);
+      return this.enrollStudent();
+    }
 
     return response.getCode();
   }
@@ -59,10 +64,14 @@ public class StudentFrontend {
    * @throws ResponseException
    */
   public ClassState list() throws StatusRuntimeException, ResponseException {
-    StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-    StudentClassServer.ListClassResponse response = stub.listClass(StudentClassServer.ListClassRequest.getDefaultInstance());
+    getNewStubWithQualifiers(List.of("P","S"), false);
+    StudentClassServer.ListClassResponse response = _stub.listClass(StudentClassServer.ListClassRequest.getDefaultInstance());
 
-    if (response.getCode() == ResponseCode.OK) {
+    if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+      getNewStubWithQualifiers(List.of("P","S"), true);
+      return this.list();
+    }
+    else if (response.getCode() == ResponseCode.OK) {
       return response.getClassState();
     } else {
       throw new ResponseException(response.getCode());

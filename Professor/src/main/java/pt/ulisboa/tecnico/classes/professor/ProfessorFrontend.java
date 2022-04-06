@@ -26,7 +26,6 @@ public class ProfessorFrontend {
 
     /**
      * creates an instance of ProfessorFrontend
-     *
      */
     public ProfessorFrontend() {
         this._nameServer = new NameServerFrontend();
@@ -34,7 +33,7 @@ public class ProfessorFrontend {
 
 
     private void getNewStubWithQualifiers(List<String> qualifiers, boolean previousIsInactive) {
-        _stub = ProfessorServiceGrpc.newBlockingStub(_nameServer.getChannel(ProfessorServiceGrpc.SERVICE_NAME, qualifiers, previousIsInactive));
+        this._stub = ProfessorServiceGrpc.newBlockingStub(_nameServer.getChannel(ProfessorServiceGrpc.SERVICE_NAME, qualifiers, previousIsInactive));
     }
 
     /**
@@ -69,12 +68,12 @@ public class ProfessorFrontend {
      */
     public ResponseCode openEnrollmentsCommand(int capacity) throws StatusRuntimeException {
 
-        getNewStubWithQualifiers(List.of("P", "S"), false);
+        getNewStubWithQualifiers(List.of("P"), false);
         ProfessorClassServer.OpenEnrollmentsRequest request = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder().setCapacity(capacity).build();
         ProfessorClassServer.OpenEnrollmentsResponse response = _stub.openEnrollments(request);
 
         if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(List.of("P", "S"), true);
+            getNewStubWithQualifiers(List.of("P"), true);
             return this.openEnrollmentsCommand(capacity);
         }
 
@@ -87,12 +86,12 @@ public class ProfessorFrontend {
      */
     public ResponseCode closeEnrollmentsCommand() throws StatusRuntimeException {
 
-        getNewStubWithQualifiers(List.of("P", "S"), false);
+        getNewStubWithQualifiers(List.of("P"), false);
         ProfessorClassServer.CloseEnrollmentsRequest request = ProfessorClassServer.CloseEnrollmentsRequest.getDefaultInstance();
         ProfessorClassServer.CloseEnrollmentsResponse response = _stub.closeEnrollments(request);
 
         if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(List.of("P", "S"), true);
+            getNewStubWithQualifiers(List.of("P"), true);
             return this.closeEnrollmentsCommand();
         }
 
@@ -107,12 +106,12 @@ public class ProfessorFrontend {
      */
     public ResponseCode cancelEnrollmentCommand(String studentId) throws StatusRuntimeException {
 
-        getNewStubWithQualifiers(List.of("P", "S"), false);
+        getNewStubWithQualifiers(List.of("P"), false);
         ProfessorClassServer.CancelEnrollmentRequest request = ProfessorClassServer.CancelEnrollmentRequest.newBuilder().setStudentId(studentId).build();
         ProfessorClassServer.CancelEnrollmentResponse response = _stub.cancelEnrollment(request);
 
         if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(List.of("P", "S"), true);
+            getNewStubWithQualifiers(List.of("P"), true);
             return this.cancelEnrollmentCommand(studentId);
         }
 

@@ -26,7 +26,7 @@ public class Professor {
     public static void main(String[] args) {
         System.out.println(Professor.class.getSimpleName());
 
-        NameServerFrontend nameServer = new NameServerFrontend();
+        ProfessorFrontend frontend = new ProfessorFrontend();
 
         Scanner lineReader = new Scanner(System.in);
 
