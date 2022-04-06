@@ -62,6 +62,8 @@ public class ClassServer {
             .addService(studentService)
             .build();
 
+
+
     server.getServices().forEach(serverService -> {
       nameServer.registerServer(serverService.getServiceDescriptor().getName(), host+":"+port, qualifiers);
     });

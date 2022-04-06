@@ -50,6 +50,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
         Collection<ServerEntry> results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList());
 
+        LOGGER.info("Got " + results.size() + " records \n" + results);
+
         responseObserver.onNext(LookupResponse.newBuilder().addAllServers(results).build());
         responseObserver.onCompleted();
     }

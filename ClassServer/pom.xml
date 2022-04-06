@@ -15,7 +15,7 @@
         <mainClass>pt.ulisboa.tecnico.classes.classserver.ClassServer</mainClass>
         <server.host>localhost</server.host>
         <server.port>2001</server.port>
-        <server.qualifiers>primary</server.qualifiers>
+        <server.qualifiers>P S</server.qualifiers>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

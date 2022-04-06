@@ -7,13 +7,13 @@ import pt.ulisboa.tecnico.classes.contract.naming.NamingServerServiceGrpc;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class NameServerFrontend {
 
   private final NamingServerServiceGrpc.NamingServerServiceBlockingStub _stub;
   private ManagedChannel _cachedChannel;
-  private String _cachedAddress;
-  private List<String> _cachedChannelQualifiers;
+  private ClassServerNamingServer.ServerEntry _cachedServer;
   private HashMap<String, Integer> _cachedInactiveServers;
 
   private static final Integer TRY_AGAIN_COOLDOWN = 4;
@@ -22,6 +22,7 @@ public class NameServerFrontend {
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress("localhost", 5000).usePlaintext().build();
     this._stub = NamingServerServiceGrpc.newBlockingStub(channel);
+    this._cachedInactiveServers = new HashMap<String, Integer>();
   }
 
   public void registerServer(String serviceName, String address, List<String> qualifiers) {
@@ -66,10 +67,17 @@ public class NameServerFrontend {
 
     ClassServerNamingServer.LookupResponse response = this._stub.lookup(request);
 
-    return response.getServersList().stream()
-        .filter(address -> !_cachedInactiveServers.containsKey(address))
-        .findFirst()
-        .orElseThrow(() -> new RuntimeException("No servers available"));
+    List<ClassServerNamingServer.ServerEntry> servers = response.getServersList().stream()
+            .filter(server -> !_cachedInactiveServers.containsKey(server.getAddress()))
+            .toList();
+
+    if (servers.isEmpty()) {
+      throw new RuntimeException("No servers available");
+    }
+
+    Random rand = new Random();
+
+    return servers.get(rand.nextInt(servers.size()));
   }
 
   /**
@@ -82,17 +90,16 @@ public class NameServerFrontend {
    */
   public ManagedChannel getChannel(
       String serviceName, List<String> qualifiers, boolean previousIsInactive) {
-    if (_cachedChannel == null || !qualifiers.containsAll(_cachedChannelQualifiers) || previousIsInactive) {
+    if (_cachedChannel == null || !qualifiers.containsAll(_cachedServer.getQualifiersList()) || previousIsInactive) {
       if (_cachedChannel != null) {
         if (previousIsInactive) {
-          _cachedInactiveServers.put(_cachedAddress, 0);
+          _cachedInactiveServers.put(_cachedServer.getAddress(), 0);
         }
         _cachedChannel.shutdown();
       }
 
-      _cachedAddress = this.lookup(serviceName, qualifiers).getAddress();
-      _cachedChannelQualifiers = qualifiers;
-      _cachedChannel = ManagedChannelBuilder.forTarget(_cachedAddress).usePlaintext().build();
+      _cachedServer = this.lookup(serviceName, qualifiers);
+      _cachedChannel = ManagedChannelBuilder.forTarget(_cachedServer.getAddress()).usePlaintext().build();
     }
 
     this.updateInactiveServersList();
