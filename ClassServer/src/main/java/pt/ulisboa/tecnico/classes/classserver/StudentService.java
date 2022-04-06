@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
@@ -58,11 +59,11 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
         if (!currentClassState.getOpenEnrollments()) {
             response.setCode(ResponseCode.ENROLLMENTS_ALREADY_CLOSED);
 
-        } else if (!currentClassState.getEnrolledList().contains(student)) {
+        } else if (currentClassState.getEnrolledList().contains(student)) {
             response.setCode(ResponseCode.STUDENT_ALREADY_ENROLLED);
 
         } else if (capacity < enrolledCount + 1) {
-            response.setCode(ResponseCode.STUDENT_ALREADY_ENROLLED);
+            response.setCode(ResponseCode.FULL_CLASS);
 
         } else {
             LOGGER.info("Building new class state");
@@ -88,11 +89,11 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param responseObserver
      */
     @Override
-    public void listClass(ClassesDefinitions.DumpRequest request, StreamObserver<ClassesDefinitions.DumpResponse> responseObserver) {
+    public void listClass(StudentClassServer.ListClassRequest request, StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
 
         LOGGER.info("Received dump request");
-
-        responseObserver.onNext(this._classObj.dumpClassState());
+        StudentClassServer.ListClassResponse.Builder response = StudentClassServer.ListClassResponse.newBuilder();
+        responseObserver.onNext(response.setClassState(this._classObj.getClassState()).build());
         responseObserver.onCompleted();
     }
 }

@@ -7,8 +7,6 @@ import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.Student;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpRequest;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
@@ -27,7 +25,6 @@ public class StudentFrontend {
   /**
    * creates an instance of StudentFrontend
    *
-   * @param channel
    * @param studentID
    * @param studentName
    */
@@ -37,8 +34,7 @@ public class StudentFrontend {
   }
 
   private StudentServiceGrpc.StudentServiceBlockingStub getNewStubWithQualifiers(List<String> qualifiers) {
-    String[] address = _nameServer.lookup(StudentServiceGrpc.SERVICE_NAME, qualifiers).getAddress().split(":");
-    this._channel = ManagedChannelBuilder.forAddress(address[0], Integer.valueOf(address[1])).idleTimeout(2, TimeUnit.SECONDS).usePlaintext().build();
+    this._channel = _nameServer.getChannel(StudentServiceGrpc.SERVICE_NAME, qualifiers);
     return StudentServiceGrpc.newBlockingStub(this._channel);
   }
 
@@ -46,15 +42,13 @@ public class StudentFrontend {
    * Sends an enroll request to the server and enrolls a student if is possible * prints the
    * response code
    */
-  public void enrollStudent() throws StatusRuntimeException, ResponseException {
+  public ResponseCode enrollStudent() throws StatusRuntimeException, ResponseException {
     StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
 
     StudentClassServer.EnrollRequest request = StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
     StudentClassServer.EnrollResponse response = stub.enroll(request);
 
-    if (response.getCode() != ResponseCode.OK) {
-      throw new ResponseException(response.getCode());
-    }
+    return response.getCode();
   }
 
   /**
@@ -66,7 +60,7 @@ public class StudentFrontend {
    */
   public ClassState list() throws StatusRuntimeException, ResponseException {
     StudentServiceGrpc.StudentServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-    DumpResponse response = stub.listClass(DumpRequest.getDefaultInstance());
+    StudentClassServer.ListClassResponse response = stub.listClass(StudentClassServer.ListClassRequest.getDefaultInstance());
 
     if (response.getCode() == ResponseCode.OK) {
       return response.getClassState();

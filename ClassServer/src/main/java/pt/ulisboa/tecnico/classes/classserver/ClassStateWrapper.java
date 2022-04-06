@@ -3,7 +3,7 @@ package pt.ulisboa.tecnico.classes.classserver;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
+
 
 import java.util.logging.Logger;
 
@@ -36,12 +36,5 @@ public class ClassStateWrapper {
     return _classState;
   }
 
-  public synchronized DumpResponse dumpClassState() {
-    LOGGER.info("Executing dump request");
-    DumpResponse.Builder response = DumpResponse.newBuilder();
-    response.setClassState(this._classState);
-    response.setCode(ResponseCode.OK);
-    LOGGER.info("Sending dump response with class state: \n" + Stringify.format(response.getClassState()));
-    return response.build();
-  }
+
 }

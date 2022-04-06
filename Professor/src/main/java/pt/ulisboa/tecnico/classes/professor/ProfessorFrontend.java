@@ -9,9 +9,8 @@ import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpRequest;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -22,23 +21,20 @@ import java.util.concurrent.TimeUnit;
 public class ProfessorFrontend {
 
     private final NameServerFrontend _nameServer;
-    private ManagedChannel _channel;
+    private ProfessorServiceGrpc.ProfessorServiceBlockingStub _stub;
 
 
     /**
      * creates an instance of ProfessorFrontend
      *
-     * @param channel gRPC channel
      */
     public ProfessorFrontend() {
         this._nameServer = new NameServerFrontend();
     }
 
 
-    private ProfessorServiceGrpc.ProfessorServiceBlockingStub getNewStubWithQualifiers(List<String> qualifiers) {
-        String[] address = _nameServer.lookup(ProfessorServiceGrpc.SERVICE_NAME, qualifiers).getAddress().split(":");
-        this._channel = ManagedChannelBuilder.forAddress(address[0], Integer.valueOf(address[1])).idleTimeout(2, TimeUnit.SECONDS).usePlaintext().build();
-        return ProfessorServiceGrpc.newBlockingStub(this._channel);
+    private void getNewStubWithQualifiers(List<String> qualifiers, boolean previousIsInactive) {
+        _stub = ProfessorServiceGrpc.newBlockingStub(_nameServer.getChannel(ProfessorServiceGrpc.SERVICE_NAME, qualifiers, previousIsInactive));
     }
 
     /**
@@ -49,13 +45,19 @@ public class ProfessorFrontend {
      * @throws ResponseException
      */
     public ClassState list() throws StatusRuntimeException, ResponseException {
-        ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
-        DumpResponse response = stub.listClass(DumpRequest.getDefaultInstance());
+
+        getNewStubWithQualifiers(List.of("P", "S"), false);
+        ProfessorClassServer.ListClassResponse response = _stub.listClass(ProfessorClassServer.ListClassRequest.getDefaultInstance());
 
         if (response.getCode() == ResponseCode.OK) {
             return response.getClassState();
+
+        } else if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+            getNewStubWithQualifiers(List.of("P", "S"), true);
+            return this.list();
         } else {
             throw new ResponseException(response.getCode());
+
         }
     }
 
@@ -65,30 +67,36 @@ public class ProfessorFrontend {
      *
      * @param capacity
      */
-    public void openEnrollmentsCommand(int capacity) throws StatusRuntimeException, ResponseException {
-        ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
+    public ResponseCode openEnrollmentsCommand(int capacity) throws StatusRuntimeException {
 
+        getNewStubWithQualifiers(List.of("P", "S"), false);
         ProfessorClassServer.OpenEnrollmentsRequest request = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder().setCapacity(capacity).build();
-        ProfessorClassServer.OpenEnrollmentsResponse response = stub.openEnrollments(request);
+        ProfessorClassServer.OpenEnrollmentsResponse response = _stub.openEnrollments(request);
 
-        if (response.getCode() != ResponseCode.OK) {
-            throw new ResponseException(response.getCode());
+        if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+            getNewStubWithQualifiers(List.of("P", "S"), true);
+            return this.openEnrollmentsCommand(capacity);
         }
+
+        return response.getCode();
     }
 
     /**
      * Sends a closeEnrollments request to the server and changes the class state to not
      * allow further enrollments, prints the response code
      */
-    public void closeEnrollmentsCommand() throws StatusRuntimeException, ResponseException {
-        ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
+    public ResponseCode closeEnrollmentsCommand() throws StatusRuntimeException {
 
+        getNewStubWithQualifiers(List.of("P", "S"), false);
         ProfessorClassServer.CloseEnrollmentsRequest request = ProfessorClassServer.CloseEnrollmentsRequest.getDefaultInstance();
-        ProfessorClassServer.CloseEnrollmentsResponse response = stub.closeEnrollments(request);
+        ProfessorClassServer.CloseEnrollmentsResponse response = _stub.closeEnrollments(request);
 
-        if (response.getCode() != ResponseCode.OK) {
-            throw new ResponseException(response.getCode());
+        if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+            getNewStubWithQualifiers(List.of("P", "S"), true);
+            return this.closeEnrollmentsCommand();
         }
+
+        return response.getCode();
     }
 
     /**
@@ -97,14 +105,17 @@ public class ProfessorFrontend {
      *
      * @param studentId
      */
-    public void cancelEnrollmentCommand(String studentId) throws StatusRuntimeException, ResponseException {
-        ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = getNewStubWithQualifiers(List.of("primary"));
+    public ResponseCode cancelEnrollmentCommand(String studentId) throws StatusRuntimeException {
 
+        getNewStubWithQualifiers(List.of("P", "S"), false);
         ProfessorClassServer.CancelEnrollmentRequest request = ProfessorClassServer.CancelEnrollmentRequest.newBuilder().setStudentId(studentId).build();
-        ProfessorClassServer.CancelEnrollmentResponse response = stub.cancelEnrollment(request);
+        ProfessorClassServer.CancelEnrollmentResponse response = _stub.cancelEnrollment(request);
 
-        if (response.getCode() != ResponseCode.OK) {
-            throw new ResponseException(response.getCode());
+        if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+            getNewStubWithQualifiers(List.of("P", "S"), true);
+            return this.cancelEnrollmentCommand(studentId);
         }
+
+        return response.getCode();
     }
 }

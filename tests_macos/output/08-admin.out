@@ -1,8 +1,34 @@
-[ERROR] [ERROR] Could not find the selected project in the reactor: admin @ 
-[ERROR] Could not find the selected project in the reactor: admin -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MavenExecutionException
+Admin
+Received 0 Argument(s)
+
+> ClassState{
+	capacity=1,
+	openEnrollments=false,
+	enrolled=[
+		Student{
+			Id='aluno1001',
+			Name='Manuel Goucha'
+		}],
+	discarded=[
+		Student{
+			Id='aluno1000',
+			Name='Cristina Ferreira'
+		}]
+}
+
+> ClassState{
+	capacity=1,
+	openEnrollments=false,
+	enrolled=[
+		Student{
+			Id='aluno1001',
+			Name='Manuel Goucha'
+		}],
+	discarded=[
+		Student{
+			Id='aluno1000',
+			Name='Cristina Ferreira'
+		}]
+}
+
+> 

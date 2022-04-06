@@ -25,16 +25,21 @@ public class Student {
             System.out.printf("args[%d] = %s%n", i, args[i]);
         }
 
-        if (!(args[3].length() >= 3)) {
-            System.out.printf("invalid student name too small ");
+        if (args.length < 2) {
+            System.err.println("Argument(s) missing!");
+            System.err.printf("Usage: java %s student_id student_name%n", Student.class.getName());
+            return;
         }
-        if (!(args[3].length() <= 30)) {
-            System.out.printf("invalid student name too big ");
+
+        if (!(args[1].length() >= 3)) {
+            System.out.printf("Invalid student name too small ");
         }
-        final String host = args[0];
-        final int port = Integer.parseInt(args[1]);
-        final String studentID = args[2];
-        final String studentName = args[3];
+        if (!(args[1].length() <= 30)) {
+            System.out.printf("Invalid student name too big ");
+        }
+
+        final String studentID = args[0];
+        final String studentName = args[1];
 
         final StudentFrontend frontend = new StudentFrontend(studentID, studentName);
 
@@ -47,12 +52,13 @@ public class Student {
             String line = scanner.nextLine();
 
             try {
+
                 if (EXIT_CMD.equals(line)) {
                     scanner.close();
                     System.exit(0);
 
                 } else if (ENROLL_CMD.equals(line)) {
-                    frontend.enrollStudent();
+                    System.out.println(Stringify.format(frontend.enrollStudent()));
 
                 } else if (LIST_CMD.equals(line)) {
                     ClassesDefinitions.ClassState classState = frontend.list();

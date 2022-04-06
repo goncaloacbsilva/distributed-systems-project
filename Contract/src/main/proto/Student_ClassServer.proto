@@ -13,7 +13,14 @@ message EnrollResponse {
   ResponseCode code = 1;
 }
 
+message ListClassRequest {}
+
+message ListClassResponse {
+  ResponseCode code = 1;
+  ClassState classState = 2;
+}
+
 service StudentService {
-  rpc listClass(DumpRequest) returns (DumpResponse);
+  rpc listClass(ListClassRequest) returns (ListClassResponse);
   rpc enroll(EnrollRequest) returns (EnrollResponse);
 }

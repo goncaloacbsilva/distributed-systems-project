@@ -44,17 +44,19 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
     public synchronized void openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request, StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
         LOGGER.info("Received openEnrollments request");
         ProfessorClassServer.OpenEnrollmentsResponse.Builder response = ProfessorClassServer.OpenEnrollmentsResponse.newBuilder();
+        int capacity = request.getCapacity();
 
         if (this._classObj.getClassState().getOpenEnrollments()) {
             response.setCode(ResponseCode.ENROLLMENTS_ALREADY_OPENED);
 
-        } else if (this._classObj.getClassState().getEnrolledList().size() >= request.getCapacity()) {
+        } else if (this._classObj.getClassState().getEnrolledList().size() >= capacity) {
             response.setCode(ResponseCode.FULL_CLASS);
 
         } else {
             LOGGER.info("Building new class state");
             ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
             classStateBuilder.setOpenEnrollments(true);
+            classStateBuilder.setCapacity(capacity);
             this._classObj.setClassState(classStateBuilder.build());
             LOGGER.info("Class state built");
 
@@ -105,11 +107,11 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public void listClass(ClassesDefinitions.DumpRequest request, StreamObserver<ClassesDefinitions.DumpResponse> responseObserver) {
+    public void listClass(ProfessorClassServer.ListClassRequest request, StreamObserver<ProfessorClassServer.ListClassResponse> responseObserver) {
 
         LOGGER.info("Received dump request");
-
-        responseObserver.onNext(this._classObj.dumpClassState());
+        ProfessorClassServer.ListClassResponse.Builder response = ProfessorClassServer.ListClassResponse.newBuilder();
+        responseObserver.onNext(response.setClassState(this._classObj.getClassState()).build());
         responseObserver.onCompleted();
     }
 

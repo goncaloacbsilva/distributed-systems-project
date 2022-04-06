@@ -27,9 +27,16 @@ message CancelEnrollmentResponse {
   ResponseCode code = 1;
 }
 
+message ListClassRequest {}
+
+message ListClassResponse {
+  ResponseCode code = 1;
+  ClassState classState = 2;
+}
+
 service ProfessorService {
   rpc openEnrollments(OpenEnrollmentsRequest) returns (OpenEnrollmentsResponse);
   rpc closeEnrollments(CloseEnrollmentsRequest) returns (CloseEnrollmentsResponse);
-  rpc listClass(DumpRequest) returns (DumpResponse);
+  rpc listClass(ListClassRequest) returns (ListClassResponse);
   rpc cancelEnrollment(CancelEnrollmentRequest) returns (CancelEnrollmentResponse);
 }

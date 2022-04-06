@@ -26,11 +26,5 @@ enum ResponseCode {
   WRITING_NOT_SUPPORTED = 7;
 }
 
-// Universal Dump request and response
 
-message DumpRequest {}
 
-message DumpResponse {
-  ResponseCode code = 1;
-  ClassState classState = 2;
-}

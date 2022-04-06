@@ -33,6 +33,13 @@ message GossipResponse {
   ResponseCode code = 1;
 }
 
+message DumpRequest {}
+
+message DumpResponse {
+  ResponseCode code = 1;
+  ClassState classState = 2;
+}
+
 service AdminService {
   rpc activate(ActivateRequest) returns (ActivateResponse);
   rpc deactivate(DeactivateRequest) returns (DeactivateResponse);
