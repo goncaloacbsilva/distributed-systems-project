@@ -45,26 +45,34 @@ public class Student {
 
         Scanner scanner = new Scanner(System.in);
 
+
         while (true) {
 
             System.out.printf("%n> ");
 
             String line = scanner.nextLine();
+            String commandArgs[] = line.split(" ", 2);
+            String command = commandArgs[0];
 
             try {
 
-                if (EXIT_CMD.equals(line)) {
-                    scanner.close();
-                    System.exit(0);
+                switch (command) {
 
-                } else if (ENROLL_CMD.equals(line)) {
-                    System.out.println(Stringify.format(frontend.enrollStudent()));
+                    case EXIT_CMD -> {
+                        scanner.close();
+                        System.exit(0);
+                    }
 
-                } else if (LIST_CMD.equals(line)) {
-                    ClassesDefinitions.ClassState classState = frontend.list();
-                    System.out.println(Stringify.format(classState));
+                    case ENROLL_CMD -> {
+                        System.out.println(Stringify.format(frontend.enrollStudent()));
+                    }
 
+                    case LIST_CMD -> {
+                        ClassesDefinitions.ClassState classState = frontend.list();
+                        System.out.println(Stringify.format(classState));
+                    }
                 }
+
             } catch (ResponseException exception) {
                 System.out.println(Stringify.format(exception.getResponseCode()));
             }

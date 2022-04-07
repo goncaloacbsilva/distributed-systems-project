@@ -32,26 +32,35 @@ public class Professor {
 
         while (true) {
             System.out.printf("%n> ");
-            String command = lineReader.nextLine();
-            String commandArgs[] = command.split(" ", 2);
+            String line = lineReader.nextLine();
+            String commandArgs[] = line.split(" ", 2);
+            String command = commandArgs[0];
 
             try {
-                if (commandArgs[0].equals(LIST_COMMAND)) {
-                    ClassesDefinitions.ClassState classState = frontend.list();
-                    System.out.println(Stringify.format(classState));
 
-                } else if (commandArgs[0].equals(OPEN_ENROLLMENTS_COMMAND)) {
-                    System.out.println(Stringify.format(frontend.openEnrollmentsCommand(Integer.parseInt(commandArgs[1]))));
+                switch (command) {
 
-                } else if (commandArgs[0].equals(CLOSE_ENROLLMENTS_COMMAND)) {
-                    System.out.println(Stringify.format(frontend.closeEnrollmentsCommand()));
+                    case LIST_COMMAND -> {
+                        ClassesDefinitions.ClassState classState = frontend.list();
+                        System.out.println(Stringify.format(classState));
+                    }
 
-                } else if (commandArgs[0].equals(CANCEL_ENROLLMENTS_COMMAND)) {
-                    System.out.println(Stringify.format(frontend.cancelEnrollmentCommand(commandArgs[1])));
+                    case OPEN_ENROLLMENTS_COMMAND -> {
+                        System.out.println(Stringify.format(frontend.openEnrollmentsCommand(Integer.parseInt(commandArgs[1]))));
+                    }
 
-                } else if (commandArgs[0].equals(EXIT_COMMAND)) {
-                    lineReader.close();
-                    System.exit(0);
+                    case CLOSE_ENROLLMENTS_COMMAND -> {
+                        System.out.println(Stringify.format(frontend.closeEnrollmentsCommand()));
+                    }
+
+                    case CANCEL_ENROLLMENTS_COMMAND -> {
+                        System.out.println(Stringify.format(frontend.cancelEnrollmentCommand(commandArgs[1])));
+                    }
+
+                    case EXIT_COMMAND -> {
+                        lineReader.close();
+                        System.exit(0);
+                    }
 
                 }
 
