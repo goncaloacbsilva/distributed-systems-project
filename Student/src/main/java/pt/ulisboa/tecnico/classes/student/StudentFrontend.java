@@ -13,6 +13,7 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -64,11 +65,11 @@ public class StudentFrontend {
    * @throws ResponseException
    */
   public ClassState list() throws StatusRuntimeException, ResponseException {
-    getNewStubWithQualifiers(List.of("P","S"), false);
+    getNewStubWithQualifiers(new ArrayList<>(), false);
     StudentClassServer.ListClassResponse response = _stub.listClass(StudentClassServer.ListClassRequest.getDefaultInstance());
 
     if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-      getNewStubWithQualifiers(List.of("P","S"), true);
+      getNewStubWithQualifiers(new ArrayList<>(), true);
       return this.list();
     }
     else if (response.getCode() == ResponseCode.OK) {

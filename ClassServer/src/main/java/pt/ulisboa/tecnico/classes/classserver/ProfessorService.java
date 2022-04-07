@@ -45,7 +45,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public synchronized void openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request, StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
+    public void openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request, StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
         ProfessorClassServer.OpenEnrollmentsResponse.Builder response = ProfessorClassServer.OpenEnrollmentsResponse.newBuilder();
 
         if (!_properties.get("isActive")) {
@@ -59,23 +59,24 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
             LOGGER.info("Received openEnrollments request");
             int capacity = request.getCapacity();
+            synchronized (this._classObj) {
+                if (this._classObj.getClassState().getOpenEnrollments()) {
+                    response.setCode(ResponseCode.ENROLLMENTS_ALREADY_OPENED);
 
-            if (this._classObj.getClassState().getOpenEnrollments()) {
-                response.setCode(ResponseCode.ENROLLMENTS_ALREADY_OPENED);
+                } else if (this._classObj.getClassState().getEnrolledList().size() >= capacity) {
+                    response.setCode(ResponseCode.FULL_CLASS);
 
-            } else if (this._classObj.getClassState().getEnrolledList().size() >= capacity) {
-                response.setCode(ResponseCode.FULL_CLASS);
+                } else {
+                    LOGGER.info("Building new class state");
+                    ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
+                    classStateBuilder.setOpenEnrollments(true);
+                    classStateBuilder.setCapacity(capacity);
+                    this._classObj.setClassState(classStateBuilder.build());
+                    LOGGER.info("Class state built");
 
-            } else {
-                LOGGER.info("Building new class state");
-                ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
-                classStateBuilder.setOpenEnrollments(true);
-                classStateBuilder.setCapacity(capacity);
-                this._classObj.setClassState(classStateBuilder.build());
-                LOGGER.info("Class state built");
-
-                response.setCode(ResponseCode.OK);
-                LOGGER.info("Set response as OK");
+                    response.setCode(ResponseCode.OK);
+                    LOGGER.info("Set response as OK");
+                }
             }
 
             LOGGER.info("Sending openEnrollments response");

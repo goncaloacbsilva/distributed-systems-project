@@ -1,0 +1,30 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.classes.contract.classserver;
+
+import "ClassesDefinitions.proto";
+
+// ClassServer -> ClassServer Service
+
+message PropagateStatePushRequest {
+  ClassState classState = 1;
+  map<string, int32> timestamps = 2;
+}
+
+message PropagateStatePushResponse {
+  ResponseCode code = 1;
+}
+
+message PropagateStatePullRequest {}
+
+
+message PropagateStatePullResponse {
+  ClassState classState = 1;
+  map<string, int32> timestamps = 2;
+  ResponseCode code = 3;
+}
+
+
+service ReplicaManager {
+  rpc propagateStatePush(PropagateStatePushRequest) returns (PropagateStatePushResponse);
+  rpc propagateStatePull(PropagateStatePullRequest) returns (PropagateStatePullResponse);
+}

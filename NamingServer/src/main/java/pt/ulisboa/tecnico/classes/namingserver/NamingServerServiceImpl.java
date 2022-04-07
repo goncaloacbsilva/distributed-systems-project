@@ -13,6 +13,7 @@ import pt.ulisboa.tecnico.classes.contract.naming.NamingServerServiceGrpc;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +54,25 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         LOGGER.info("Got " + results.size() + " records \n" + results);
 
         responseObserver.onNext(LookupResponse.newBuilder().addAllServers(results).build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void list(ClassServerNamingServer.ListRequest request, StreamObserver<ClassServerNamingServer.ListResponse> responseObserver) {
+        LOGGER.info("Listing available servers...");
+
+        HashSet<ServerEntry> servers = new HashSet<ServerEntry>();
+        ClassServerNamingServer.ListResponse.Builder response = ClassServerNamingServer.ListResponse.newBuilder();
+
+        for (ServiceEntry service : _services.getServices().values()) {
+            servers.addAll(service.getServers());
+        }
+
+        response.addAllServers(servers);
+
+        LOGGER.info("Got " + servers.size() + " records \n" + servers);
+
+        responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
 

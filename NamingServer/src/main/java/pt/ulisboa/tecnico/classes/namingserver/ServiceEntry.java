@@ -30,7 +30,7 @@ public class ServiceEntry {
     public synchronized Collection<ServerEntry> lookupServers(List<String> qualifiers) {
         List<ServerEntry> foundServers = new ArrayList<ServerEntry>();
         for (ServerEntry server : this._servers) {
-            if (qualifiers.containsAll(server.getQualifiersList())) {
+            if (server.getQualifiersList().containsAll(qualifiers) || qualifiers.isEmpty()) {
                 foundServers.add(server);
             }
         }

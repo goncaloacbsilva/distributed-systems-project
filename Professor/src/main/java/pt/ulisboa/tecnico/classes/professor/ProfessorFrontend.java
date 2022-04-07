@@ -12,6 +12,7 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -45,14 +46,14 @@ public class ProfessorFrontend {
      */
     public ClassState list() throws StatusRuntimeException, ResponseException {
 
-        getNewStubWithQualifiers(List.of("P", "S"), false);
+        getNewStubWithQualifiers(new ArrayList<>(), false);
         ProfessorClassServer.ListClassResponse response = _stub.listClass(ProfessorClassServer.ListClassRequest.getDefaultInstance());
 
         if (response.getCode() == ResponseCode.OK) {
             return response.getClassState();
 
         } else if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(List.of("P", "S"), true);
+            getNewStubWithQualifiers(new ArrayList<>(), true);
             return this.list();
         } else {
             throw new ResponseException(response.getCode());

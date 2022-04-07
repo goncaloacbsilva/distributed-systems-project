@@ -30,8 +30,15 @@ message DeleteRequest {
 
 message DeleteResponse {}
 
+message ListRequest {}
+
+message ListResponse {
+  repeated ServerEntry servers = 1;
+}
+
 service NamingServerService {
   rpc register(RegisterRequest) returns (RegisterResponse);
   rpc lookup(LookupRequest) returns (LookupResponse);
   rpc delete(DeleteRequest) returns (DeleteResponse);
+  rpc list(ListRequest) returns (ListResponse);
 }

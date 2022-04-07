@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.naming.NamingServerServiceGrpc;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -57,6 +58,10 @@ public class NameServerFrontend {
     }
   }
 
+  public List<ClassServerNamingServer.ServerEntry> list() {
+    return this._stub.list(ClassServerNamingServer.ListRequest.getDefaultInstance()).getServersList();
+  }
+
   public ClassServerNamingServer.ServerEntry lookup(
       String serviceName, List<String> qualifiers) {
     ClassServerNamingServer.LookupRequest request =
@@ -90,7 +95,7 @@ public class NameServerFrontend {
    */
   public ManagedChannel getChannel(
       String serviceName, List<String> qualifiers, boolean previousIsInactive) {
-    if (_cachedChannel == null || !qualifiers.containsAll(_cachedServer.getQualifiersList()) || previousIsInactive) {
+    if (_cachedChannel == null || (!_cachedServer.getQualifiersList().containsAll(qualifiers) && !qualifiers.isEmpty())  || previousIsInactive) {
       if (_cachedChannel != null) {
         if (previousIsInactive) {
           _cachedInactiveServers.put(_cachedServer.getAddress(), 0);

@@ -4,6 +4,7 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ public class ClassServer {
     Integer port = Integer.valueOf(args[1]);
 
     ArrayList<String> qualifiers = new ArrayList<String>();
+    HashMap<String, Integer> timestamps = new HashMap<String, Integer>();
 
     for (int i = 2; i < args.length - 1; i++) {
       qualifiers.add(args[i]);
@@ -52,11 +54,15 @@ public class ClassServer {
     _properties.put("isActive", true);
     _properties.put("isPrimary", qualifiers.contains("P"));
 
-    // Initialize Class Object, name server frontend and all the services
-    ClassStateWrapper classObj = new ClassStateWrapper();
-
     final NameServerFrontend nameServer = new NameServerFrontend();
 
+    // Initialize timestamps
+    for(ClassServerNamingServer.ServerEntry entry : nameServer.list()) {
+      timestamps.put(entry.getAddress(), 0);
+    }
+
+    // Initialize Class Object, name server frontend and all the services
+    ClassStateWrapper classObj = new ClassStateWrapper();
     final BindableService adminService = new AdminService(classObj, _enableLogging, _properties);
     final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties);
     final BindableService studentService = new StudentService(classObj, _enableLogging, _properties);
