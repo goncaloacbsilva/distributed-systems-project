@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
     private ClassStateWrapper _classObj;
+    private final ReplicaManagerFrontend _replicaManger;
     private final HashMap<String, Boolean> _properties;
     private static final Logger LOGGER = Logger.getLogger(StudentService.class.getName());
 
@@ -29,9 +30,10 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param obj         shared object
      * @param enableDebug debug flag
      */
-    public StudentService(ClassStateWrapper obj, boolean enableDebug, HashMap<String, Boolean> properties) {
+    public StudentService(ClassStateWrapper obj, boolean enableDebug, HashMap<String, Boolean> properties, ReplicaManagerFrontend replicaManger) {
         super();
         this._classObj = obj;
+        _replicaManger = replicaManger;
         this._properties = properties;
 
         if (!enableDebug) {
@@ -86,6 +88,9 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
                 response.setCode(ResponseCode.OK);
                 LOGGER.info("Set response as OK");
+                LOGGER.info("Propagating State");
+                //TODO : verificar se gossip esta ativo (entrega 3)
+                _replicaManger.propagateStatePush(_properties.get("isPrimary"));
             }
 
             LOGGER.info("Sending enroll response");
@@ -110,6 +115,10 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
             response.setCode(ResponseCode.INACTIVE_SERVER);
 
         } else {
+            LOGGER.info("Verifying state is up to date ");
+            //TODO : verificar se gossip esta ativo (entrega 3)
+            _replicaManger.propagateStatePull(_properties.get("isPrimary"));
+
             LOGGER.info("Received dump request");
             response.setClassState(this._classObj.getClassState());
         }

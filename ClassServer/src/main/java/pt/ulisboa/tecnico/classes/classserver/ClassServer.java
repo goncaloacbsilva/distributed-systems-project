@@ -61,11 +61,13 @@ public class ClassServer {
       timestamps.put(entry.getAddress(), 0);
     }
 
-    // Initialize Class Object, name server frontend and all the services
+    // Initialize Class Object, replica manager frontend and all the services
     ClassStateWrapper classObj = new ClassStateWrapper();
+    final  ReplicaManagerFrontend replicaManger = new ReplicaManagerFrontend(classObj,nameServer,timestamps);
+
     final BindableService adminService = new AdminService(classObj, _enableLogging, _properties);
-    final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties);
-    final BindableService studentService = new StudentService(classObj, _enableLogging, _properties);
+    final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties, replicaManger);
+    final BindableService studentService = new StudentService(classObj, _enableLogging, _properties, replicaManger);
 
     Server server =
         ServerBuilder.forPort(port)
