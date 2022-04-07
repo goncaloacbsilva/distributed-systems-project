@@ -15,6 +15,7 @@ public class ClassServer {
 
   private static boolean _enableLogging = false;
   private static HashMap<String, Boolean> _properties;
+  private static HashMap<String, Integer> _timestamps;
 
   /**
    * Class server entry point
@@ -37,9 +38,9 @@ public class ClassServer {
 
     String host = args[0];
     Integer port = Integer.valueOf(args[1]);
+    String address = host + ":" + port;
 
     ArrayList<String> qualifiers = new ArrayList<String>();
-    HashMap<String, Integer> timestamps = new HashMap<String, Integer>();
 
     for (int i = 2; i < args.length - 1; i++) {
       qualifiers.add(args[i]);
@@ -55,40 +56,39 @@ public class ClassServer {
     _properties.put("isActive", true);
     _properties.put("isPrimary", qualifiers.contains("P"));
 
-    final NameServerFrontend nameServer = new NameServerFrontend();
+    _timestamps = new HashMap<>();
 
-    // Initialize timestamps
-    for(ClassServerNamingServer.ServerEntry entry : nameServer.list()) {
-      timestamps.put(entry.getAddress(), 0);
-    }
+    final NameServerFrontend nameServer = new NameServerFrontend();
 
     // Initialize Class Object, replica manager frontend and all the services
     ClassStateWrapper classObj = new ClassStateWrapper();
-    final  ReplicaManagerFrontend replicaManger = new ReplicaManagerFrontend(classObj,nameServer,timestamps);
+    final ReplicaManagerFrontend replicaManagerFrontend = new ReplicaManagerFrontend(classObj, _enableLogging, _properties, nameServer, address, _timestamps);
 
     final BindableService adminService = new AdminService(classObj, _enableLogging, _properties);
-    final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties, replicaManger);
-    final BindableService studentService = new StudentService(classObj, _enableLogging, _properties, replicaManger);
+    final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties, replicaManagerFrontend);
+    final BindableService replicaManagerService = new ReplicaManagerService(classObj, _enableLogging, _properties, address, _timestamps);
+    final BindableService studentService = new StudentService(classObj, _enableLogging, _properties, replicaManagerFrontend);
 
     Server server =
         ServerBuilder.forPort(port)
             .addService(adminService)
             .addService(professorService)
             .addService(studentService)
+            .addService(replicaManagerService)
             .build();
 
 
     Timer time = new Timer();
-    GossipScheduler gossipScheduler = new GossipScheduler(replicaManger);
+    GossipScheduler gossipScheduler = new GossipScheduler(replicaManagerFrontend);
     time.schedule(gossipScheduler, 0, 2000); // propagates state every 2 seconds
 
     server.getServices().forEach(serverService -> {
-      nameServer.registerServer(serverService.getServiceDescriptor().getName(), host+":"+port, qualifiers);
+      nameServer.registerServer(serverService.getServiceDescriptor().getName(), address, qualifiers);
     });
 
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       server.getServices().forEach(serverService -> {
-        nameServer.deleteServer(serverService.getServiceDescriptor().getName(), host+":"+port);
+        nameServer.deleteServer(serverService.getServiceDescriptor().getName(), address);
       });
     }));
 

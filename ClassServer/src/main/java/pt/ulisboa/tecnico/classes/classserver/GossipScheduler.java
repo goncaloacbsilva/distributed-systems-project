@@ -15,7 +15,6 @@ public class GossipScheduler extends TimerTask {
 
     @Override
     public void run() {
-        LOGGER.info("Propagating State");
-        _replicaManagerFrontend.propagateStatePush(true);
+        _replicaManagerFrontend.propagateStatePush();
     }
 }

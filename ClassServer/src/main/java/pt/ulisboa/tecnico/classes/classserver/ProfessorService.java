@@ -78,10 +78,14 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
+                    //TODO : check if gossip is active (phase 3)
+                    
+                    _replicaManger.updateTimestamp();
 
                 }
             }
 
+            
             LOGGER.info("Sending openEnrollments response");
         }
 
@@ -120,7 +124,8 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
                 response.setCode(ResponseCode.OK);
                 LOGGER.info("Set response as OK");
-
+                //TODO : check if gossip is active (phase 3)
+                _replicaManger.updateTimestamp();
             }
 
             LOGGER.info("Sending closeEnrollments response");
@@ -145,6 +150,11 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
             response.setCode(ResponseCode.INACTIVE_SERVER);
 
         } else {
+
+            LOGGER.info("Verifying state is up to date ");
+            //TODO : check if gossip is active (phase 3)
+            //_replicaManger.propagateStatePull(_properties.get("isPrimary"));
+
             LOGGER.info("Received dump request");
             response.setClassState(this._classObj.getClassState());
         }
@@ -198,6 +208,8 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
                 response.setCode(ResponseCode.OK);
                 LOGGER.info("Set response as OK");
+                //TODO : check if gossip is active (phase 3)
+                _replicaManger.updateTimestamp();
             } else {
                 response.setCode(ResponseCode.NON_EXISTING_STUDENT);
                 LOGGER.info("Set response as non existing student");

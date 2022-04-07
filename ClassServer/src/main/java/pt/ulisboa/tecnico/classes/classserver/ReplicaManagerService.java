@@ -6,38 +6,84 @@ import pt.ulisboa.tecnico.classes.contract.classserver.ReplicaManagerGrpc;
 import pt.ulisboa.tecnico.classes.contract.classserver.ReplicaManagerClassServer;
 
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImplBase {
     private ClassStateWrapper _classObj;
     private HashMap<String, Integer> _timestamps;
-    private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
+    private final HashMap<String, Boolean> _properties;
+    private static final Logger LOGGER = Logger.getLogger(ReplicaManagerService.class.getName());
+    private String _address;
 
-    public ReplicaManagerService(ClassStateWrapper classObj, HashMap<String, Integer> timestamps) {
+    public ReplicaManagerService(ClassStateWrapper classObj, boolean enableDebug, HashMap<String, Boolean> properties, String address, HashMap<String, Integer> timestamps) {
         this._classObj = classObj;
         this._timestamps = timestamps;
+        this._properties = properties;
+        this._address = address;
+
+        if (!enableDebug) {
+            LOGGER.setLevel(Level.OFF);
+        }
+
+        LOGGER.info("Started with debug mode enabled");
     }
 
     @Override
     public void propagateStatePush(ReplicaManagerClassServer.PropagateStatePushRequest request, StreamObserver<ReplicaManagerClassServer.PropagateStatePushResponse> responseObserver) {
-        LOGGER.info("Received propagateStatePush request");
-        this._classObj.setClassState(request.getClassState());
-        this._timestamps.putAll(request.getTimestampsMap());
-        responseObserver.onNext(ReplicaManagerClassServer.PropagateStatePushResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build());
-        LOGGER.info("Set response as OK");
-        LOGGER.info("Sending propagateStatePush response");
+        ReplicaManagerClassServer.PropagateStatePushResponse.Builder response = ReplicaManagerClassServer.PropagateStatePushResponse.newBuilder();
+
+        if (!_properties.get("isActive")) {
+            response.setCode(ClassesDefinitions.ResponseCode.INACTIVE_SERVER);
+
+        } else {
+
+            //TODO: Validate new >= current
+
+            LOGGER.info("Received propagateStatePush request");
+            this._classObj.setClassState(request.getClassState());
+
+
+            this._timestamps.putAll(request.getTimestampsMap());
+            int primaryValue = this._timestamps.get(request.getPrimaryAddress());
+            this._timestamps.put(this._address, primaryValue);
+
+            LOGGER.info("Set response as OK");
+
+            response.setCode(ClassesDefinitions.ResponseCode.OK);
+
+            LOGGER.info("Sending propagateStatePush response");
+            LOGGER.info("[ReplicaManager] Updated State to: " + this._timestamps);
+
+        }
+
+        responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
 
     @Override
     public void propagateStatePull(ReplicaManagerClassServer.PropagateStatePullRequest request, StreamObserver<ReplicaManagerClassServer.PropagateStatePullResponse> responseObserver) {
-        LOGGER.info("Received propagateStatePull request");
         ReplicaManagerClassServer.PropagateStatePullResponse.Builder response = ReplicaManagerClassServer.PropagateStatePullResponse.newBuilder();
-        response.setClassState(this._classObj.getClassState());
-        response.getTimestampsMap().putAll(this._timestamps);
-        responseObserver.onNext(response.setCode(ClassesDefinitions.ResponseCode.OK).build());
-        LOGGER.info("Set response as OK");
-        LOGGER.info("Sending propagateStatePull response");
+
+        if (!_properties.get("isActive")) {
+            response.setCode(ClassesDefinitions.ResponseCode.INACTIVE_SERVER);
+
+        } else {
+
+            LOGGER.info("Received propagateStatePull request");
+
+            response.setClassState(this._classObj.getClassState());
+            response.putAllTimestamps(this._timestamps);
+
+            LOGGER.info("Set response as OK");
+            response.setCode(ClassesDefinitions.ResponseCode.OK);
+
+            LOGGER.info("Sending propagateStatePull response");
+            LOGGER.info("[ReplicaManager] Updated State to: " + this._timestamps);
+
+        }
+
+        responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
 }

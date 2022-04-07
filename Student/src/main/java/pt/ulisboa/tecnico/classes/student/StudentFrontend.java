@@ -6,6 +6,7 @@ import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
+import pt.ulisboa.tecnico.classes.TimestampsManager;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /** This class abstracts all the stub calls executed by the Student client */
-public class StudentFrontend {
+public class StudentFrontend extends TimestampsManager {
 
   private final NameServerFrontend _nameServer;
   private StudentServiceGrpc.StudentServiceBlockingStub _stub;
@@ -31,6 +32,7 @@ public class StudentFrontend {
    * @param studentName
    */
   public StudentFrontend(String studentID, String studentName) {
+    super(new NameServerFrontend());
     this._nameServer = new NameServerFrontend();
     this._student = Student.newBuilder().setStudentId(studentID).setStudentName(studentName).build();
   }
@@ -66,15 +68,22 @@ public class StudentFrontend {
    */
   public ClassState list() throws StatusRuntimeException, ResponseException {
     getNewStubWithQualifiers(new ArrayList<>(), false);
-    StudentClassServer.ListClassResponse response = _stub.listClass(StudentClassServer.ListClassRequest.getDefaultInstance());
+
+    StudentClassServer.ListClassRequest.Builder request = StudentClassServer.ListClassRequest.newBuilder();
+
+    request.putAllTimestamps(this.getTimestamps());
+
+    StudentClassServer.ListClassResponse response = _stub.listClass(request.build());
 
     if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
       getNewStubWithQualifiers(new ArrayList<>(), true);
       return this.list();
     }
     else if (response.getCode() == ResponseCode.OK) {
+      this.setTimestamps(response.getTimestampsMap());
       return response.getClassState();
-    } else {
+    }
+    else {
       throw new ResponseException(response.getCode());
     }
   }

@@ -31,15 +31,15 @@ public class Student {
             return;
         }
 
-        if (!(args[1].length() >= 3)) {
-            System.out.printf("Invalid student name too small ");
-        }
-        if (!(args[1].length() <= 30)) {
-            System.out.printf("Invalid student name too big ");
-        }
-
         final String studentID = args[0];
         final String studentName = args[1];
+
+        if (!(studentName.length() >= 3)) {
+            System.out.printf("Invalid student name too small ");
+        }
+        if (!(studentName.length() <= 30)) {
+            System.out.printf("Invalid student name too big ");
+        }
 
         final StudentFrontend frontend = new StudentFrontend(studentID, studentName);
 

@@ -8,6 +8,7 @@ import "ClassesDefinitions.proto";
 message PropagateStatePushRequest {
   ClassState classState = 1;
   map<string, int32> timestamps = 2;
+  string primaryAddress = 3;
 }
 
 message PropagateStatePushResponse {

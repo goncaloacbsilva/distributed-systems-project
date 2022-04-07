@@ -6,6 +6,7 @@ import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
+import pt.ulisboa.tecnico.classes.TimestampsManager;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * This class abstracts all the stub calls executed by the Admin client
  */
-public class ProfessorFrontend {
+public class ProfessorFrontend extends TimestampsManager {
 
     private final NameServerFrontend _nameServer;
     private ProfessorServiceGrpc.ProfessorServiceBlockingStub _stub;
@@ -29,6 +30,7 @@ public class ProfessorFrontend {
      * creates an instance of ProfessorFrontend
      */
     public ProfessorFrontend() {
+        super(new NameServerFrontend());
         this._nameServer = new NameServerFrontend();
     }
 
@@ -45,19 +47,24 @@ public class ProfessorFrontend {
      * @throws ResponseException
      */
     public ClassState list() throws StatusRuntimeException, ResponseException {
-
         getNewStubWithQualifiers(new ArrayList<>(), false);
-        ProfessorClassServer.ListClassResponse response = _stub.listClass(ProfessorClassServer.ListClassRequest.getDefaultInstance());
+
+        ProfessorClassServer.ListClassRequest.Builder request = ProfessorClassServer.ListClassRequest.newBuilder();
+
+        request.putAllTimestamps(this.getTimestamps());
+
+        ProfessorClassServer.ListClassResponse response = _stub.listClass(request.build());
 
         if (response.getCode() == ResponseCode.OK) {
+            this.setTimestamps(response.getTimestampsMap());
             return response.getClassState();
-
-        } else if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+        }
+        else if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
             getNewStubWithQualifiers(new ArrayList<>(), true);
             return this.list();
-        } else {
+        }
+        else {
             throw new ResponseException(response.getCode());
-
         }
     }
 

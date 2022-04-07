@@ -7,17 +7,21 @@ import "ClassesDefinitions.proto";
 
 message EnrollRequest {
   Student student = 1;
+  map<string, int32> timestamps = 2;
 }
 
 message EnrollResponse {
   ResponseCode code = 1;
 }
 
-message ListClassRequest {}
+message ListClassRequest {
+  map<string, int32> timestamps = 1;
+}
 
 message ListClassResponse {
   ResponseCode code = 1;
   ClassState classState = 2;
+  map<string, int32> timestamps = 3;
 }
 
 service StudentService {

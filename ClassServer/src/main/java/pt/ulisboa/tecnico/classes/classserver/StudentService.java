@@ -88,6 +88,8 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
                 response.setCode(ResponseCode.OK);
                 LOGGER.info("Set response as OK");
+                //TODO : verificar se gossip esta ativo (entrega 3)
+                _replicaManger.updateTimestamp();
             }
 
             LOGGER.info("Sending enroll response");
