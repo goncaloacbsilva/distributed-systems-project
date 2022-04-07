@@ -101,7 +101,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public synchronized void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request, StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
+    public  void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request, StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
         ProfessorClassServer.CloseEnrollmentsResponse.Builder response = ProfessorClassServer.CloseEnrollmentsResponse.newBuilder();
 
         if (!_properties.get("isActive")) {
@@ -117,15 +117,17 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                 response.setCode(ResponseCode.ENROLLMENTS_ALREADY_CLOSED);
 
             } else {
-                LOGGER.info("Building new class state");
-                ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
-                classStateBuilder.setOpenEnrollments(false);
-                this._classObj.setClassState(classStateBuilder.build());
+                synchronized (this._classObj) {
+                    LOGGER.info("Building new class state");
+                    ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
+                    classStateBuilder.setOpenEnrollments(false);
+                    this._classObj.setClassState(classStateBuilder.build());
 
-                response.setCode(ResponseCode.OK);
-                LOGGER.info("Set response as OK");
-                //TODO : check if gossip is active (phase 3)
-                _replicaManger.updateTimestamp();
+                    response.setCode(ResponseCode.OK);
+                    LOGGER.info("Set response as OK");
+                    //TODO : check if gossip is active (phase 3)
+                    _replicaManger.updateTimestamp();
+                }
             }
 
             LOGGER.info("Sending closeEnrollments response");
@@ -171,7 +173,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public synchronized void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request, StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
+    public  void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request, StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
         ProfessorClassServer.CancelEnrollmentResponse.Builder response = ProfessorClassServer.CancelEnrollmentResponse.newBuilder();
 
         if (!_properties.get("isActive")) {
@@ -182,37 +184,39 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
             response.setCode(ResponseCode.WRITING_NOT_SUPPORTED);
 
         } else {
+            synchronized (this._classObj) {
 
-            LOGGER.info("Received cancelEnrollment request");
-            ClassesDefinitions.ClassState currentClassState = this._classObj.getClassState();
-            String studentToRemoveId = request.getStudentId();
+                LOGGER.info("Received cancelEnrollment request");
+                ClassesDefinitions.ClassState currentClassState = this._classObj.getClassState();
+                String studentToRemoveId = request.getStudentId();
 
-            LOGGER.info("Searching for student");
+                LOGGER.info("Searching for student");
 
-            ClassesDefinitions.Student studentToDiscard = currentClassState.getEnrolledList()
-                    .stream()
-                    .filter(student -> studentToRemoveId.equals(student.getStudentId()))
-                    .findAny()
-                    .orElse(null);
+                ClassesDefinitions.Student studentToDiscard = currentClassState.getEnrolledList()
+                        .stream()
+                        .filter(student -> studentToRemoveId.equals(student.getStudentId()))
+                        .findAny()
+                        .orElse(null);
 
-            if (studentToDiscard != null) {
-                LOGGER.info("Removing student from enrolled and adding to discarded");
-                LOGGER.info("Building new class state");
-                ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
+                if (studentToDiscard != null) {
+                    LOGGER.info("Removing student from enrolled and adding to discarded");
+                    LOGGER.info("Building new class state");
+                    ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
 
-                classStateBuilder.removeEnrolled(currentClassState.getEnrolledList().indexOf(studentToDiscard));
-                classStateBuilder.addDiscarded(studentToDiscard);
+                    classStateBuilder.removeEnrolled(currentClassState.getEnrolledList().indexOf(studentToDiscard));
+                    classStateBuilder.addDiscarded(studentToDiscard);
 
-                this._classObj.setClassState(classStateBuilder.build());
-                LOGGER.info("Class state built");
+                    this._classObj.setClassState(classStateBuilder.build());
+                    LOGGER.info("Class state built");
 
-                response.setCode(ResponseCode.OK);
-                LOGGER.info("Set response as OK");
-                //TODO : check if gossip is active (phase 3)
-                _replicaManger.updateTimestamp();
-            } else {
-                response.setCode(ResponseCode.NON_EXISTING_STUDENT);
-                LOGGER.info("Set response as non existing student");
+                    response.setCode(ResponseCode.OK);
+                    LOGGER.info("Set response as OK");
+                    //TODO : check if gossip is active (phase 3)
+                    _replicaManger.updateTimestamp();
+                } else {
+                    response.setCode(ResponseCode.NON_EXISTING_STUDENT);
+                    LOGGER.info("Set response as non existing student");
+                }
             }
 
             LOGGER.info("Sending cancelEnrollment response");

@@ -51,7 +51,7 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param responseObserver
      */
     @Override
-    public synchronized void enroll(StudentClassServer.EnrollRequest request, StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
+    public void enroll(StudentClassServer.EnrollRequest request, StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
         StudentClassServer.EnrollResponse.Builder response = StudentClassServer.EnrollResponse.newBuilder();
 
         if (!_properties.get("isActive")) {
@@ -62,37 +62,38 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
             response.setCode(ResponseCode.WRITING_NOT_SUPPORTED);
 
         } else {
+            synchronized (this._classObj) {
+                LOGGER.info("Received enroll request");
+                ClassesDefinitions.Student student = request.getStudent();
+                ClassesDefinitions.ClassState currentClassState = this._classObj.getClassState();
 
-            LOGGER.info("Received enroll request");
-            ClassesDefinitions.Student student = request.getStudent();
-            ClassesDefinitions.ClassState currentClassState = this._classObj.getClassState();
+                int enrolledCount = currentClassState.getEnrolledList().size();
+                int capacity = currentClassState.getCapacity();
 
-            int enrolledCount = currentClassState.getEnrolledList().size();
-            int capacity = currentClassState.getCapacity();
+                if (!currentClassState.getOpenEnrollments()) {
+                    response.setCode(ResponseCode.ENROLLMENTS_ALREADY_CLOSED);
 
-            if (!currentClassState.getOpenEnrollments()) {
-                response.setCode(ResponseCode.ENROLLMENTS_ALREADY_CLOSED);
+                } else if (currentClassState.getEnrolledList().contains(student)) {
+                    response.setCode(ResponseCode.STUDENT_ALREADY_ENROLLED);
 
-            } else if (currentClassState.getEnrolledList().contains(student)) {
-                response.setCode(ResponseCode.STUDENT_ALREADY_ENROLLED);
+                } else if (capacity < enrolledCount + 1) {
+                    response.setCode(ResponseCode.FULL_CLASS);
 
-            } else if (capacity < enrolledCount + 1) {
-                response.setCode(ResponseCode.FULL_CLASS);
+                } else {
+                    LOGGER.info("Building new class state");
+                    ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
+                    classStateBuilder.addEnrolled(student);
+                    this._classObj.setClassState(classStateBuilder.build());
+                    LOGGER.info("Class state built");
 
-            } else {
-                LOGGER.info("Building new class state");
-                ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
-                classStateBuilder.addEnrolled(student);
-                this._classObj.setClassState(classStateBuilder.build());
-                LOGGER.info("Class state built");
+                    response.setCode(ResponseCode.OK);
+                    LOGGER.info("Set response as OK");
+                    //TODO : verificar se gossip esta ativo (entrega 3)
+                    _replicaManger.updateTimestamp();
+                }
 
-                response.setCode(ResponseCode.OK);
-                LOGGER.info("Set response as OK");
-                //TODO : verificar se gossip esta ativo (entrega 3)
-                _replicaManger.updateTimestamp();
+                LOGGER.info("Sending enroll response");
             }
-
-            LOGGER.info("Sending enroll response");
         }
 
         responseObserver.onNext(response.build());

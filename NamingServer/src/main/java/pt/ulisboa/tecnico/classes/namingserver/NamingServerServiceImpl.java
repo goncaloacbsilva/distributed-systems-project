@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.classes.namingserver;
 
 import io.grpc.stub.StreamObserver;
+import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.RegisterResponse;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.RegisterRequest;
@@ -34,15 +35,27 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
     @Override
     public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
-        ServerEntry server = ServerEntry.newBuilder().setAddress(request.getAddress()).addAllQualifiers(request.getQualifiersList()).build();
-        String serviceName = request.getServiceName();
+        if (request.getAddress().contains(":")) {
+            String[] addresParser = request.getAddress().split(":");
+            try{
+                Integer number = Integer.valueOf(addresParser[1]);
+            }
+            catch (NumberFormatException ex){
+                throw new RuntimeException("Not a valid server address");
+            }
+            ServerEntry server = ServerEntry.newBuilder().setAddress(request.getAddress()).addAllQualifiers(request.getQualifiersList()).build();
+            String serviceName = request.getServiceName();
 
-        LOGGER.info("Registering " + server.getAddress() + " with qualifiers: " + Arrays.toString(request.getQualifiersList().toArray()) + " at " + serviceName);
+            LOGGER.info("Registering " + server.getAddress() + " with qualifiers: " + Arrays.toString(request.getQualifiersList().toArray()) + " at " + serviceName);
 
-        this._services.registerServer(serviceName, server);
+            this._services.registerServer(serviceName, server);
 
-        responseObserver.onNext(RegisterResponse.getDefaultInstance());
-        responseObserver.onCompleted();
+            responseObserver.onNext(RegisterResponse.getDefaultInstance());
+            responseObserver.onCompleted();
+        }else {
+            throw new RuntimeException("Not a valid server address");
+        }
+
     }
 
     @Override
