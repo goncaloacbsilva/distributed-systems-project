@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
 
 /** Class rpc server */
 public class ClassServer {
@@ -77,6 +78,9 @@ public class ClassServer {
             .build();
 
 
+    Timer time = new Timer();
+    GossipScheduler gossipScheduler = new GossipScheduler(replicaManger);
+    time.schedule(gossipScheduler, 0, 2000); // propagates state every 2 seconds
 
     server.getServices().forEach(serverService -> {
       nameServer.registerServer(serverService.getServiceDescriptor().getName(), host+":"+port, qualifiers);

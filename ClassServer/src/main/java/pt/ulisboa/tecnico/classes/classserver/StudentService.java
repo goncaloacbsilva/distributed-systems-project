@@ -88,9 +88,6 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
                 response.setCode(ResponseCode.OK);
                 LOGGER.info("Set response as OK");
-                LOGGER.info("Propagating State");
-                //TODO : verificar se gossip esta ativo (entrega 3)
-                _replicaManger.propagateStatePush(_properties.get("isPrimary"));
             }
 
             LOGGER.info("Sending enroll response");
@@ -115,9 +112,6 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
             response.setCode(ResponseCode.INACTIVE_SERVER);
 
         } else {
-            LOGGER.info("Verifying state is up to date ");
-            //TODO : verificar se gossip esta ativo (entrega 3)
-            _replicaManger.propagateStatePull(_properties.get("isPrimary"));
 
             LOGGER.info("Received dump request");
             response.setClassState(this._classObj.getClassState());
