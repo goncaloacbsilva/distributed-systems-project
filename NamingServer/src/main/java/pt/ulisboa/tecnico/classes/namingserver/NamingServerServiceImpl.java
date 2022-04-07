@@ -18,6 +18,9 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static io.grpc.Status.INVALID_ARGUMENT;
+import static io.grpc.Status.NOT_FOUND;
+
 public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServerServiceImplBase {
 
     private NamingServices _services;
@@ -41,7 +44,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
                 Integer number = Integer.valueOf(addresParser[1]);
             }
             catch (NumberFormatException ex){
-                throw new RuntimeException("Not a valid server address");
+                responseObserver.onError(INVALID_ARGUMENT.withDescription("Not a valid server address: "  + request.getAddress()).asRuntimeException());
             }
             ServerEntry server = ServerEntry.newBuilder().setAddress(request.getAddress()).addAllQualifiers(request.getQualifiersList()).build();
             String serviceName = request.getServiceName();
@@ -53,7 +56,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
             responseObserver.onNext(RegisterResponse.getDefaultInstance());
             responseObserver.onCompleted();
         }else {
-            throw new RuntimeException("Not a valid server address");
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("Not a valid server address: "  + request.getAddress()).asRuntimeException());
         }
 
     }
