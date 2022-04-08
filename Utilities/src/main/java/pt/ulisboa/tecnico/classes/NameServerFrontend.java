@@ -26,6 +26,12 @@ public class NameServerFrontend {
     this._cachedInactiveServers = new HashMap<String, Integer>();
   }
 
+  /**
+   * requests for  a new service for a given server identified by its address to be registered
+   * @param serviceName
+   * @param address
+   * @param qualifiers
+   */
   public void registerServer(String serviceName, String address, List<String> qualifiers) {
     ClassServerNamingServer.RegisterRequest request =
         ClassServerNamingServer.RegisterRequest.newBuilder()
@@ -37,6 +43,11 @@ public class NameServerFrontend {
     this._stub.register(request);
   }
 
+  /**
+   * deletes a given server for a given service
+   * @param serviceName
+   * @param address
+   */
   public void deleteServer(String serviceName, String address) {
     ClassServerNamingServer.DeleteRequest request =
         ClassServerNamingServer.DeleteRequest.newBuilder()
@@ -58,10 +69,20 @@ public class NameServerFrontend {
     }
   }
 
+  /**
+   * requests all servers registered on name server
+   * @return
+   */
   public List<ClassServerNamingServer.ServerEntry> list() {
     return this._stub.list(ClassServerNamingServer.ListRequest.getDefaultInstance()).getServersList();
   }
 
+  /**
+   * request all eligible servers given required server qualifiers
+   * @param serviceName
+   * @param qualifiers
+   * @return
+   */
   public ClassServerNamingServer.ServerEntry lookup(
       String serviceName, List<String> qualifiers) {
     ClassServerNamingServer.LookupRequest request =

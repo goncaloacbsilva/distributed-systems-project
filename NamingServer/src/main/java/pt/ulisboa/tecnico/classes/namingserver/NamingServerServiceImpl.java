@@ -36,6 +36,12 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         LOGGER.info("Started with debug mode enabled");
     }
 
+    /**
+     * Registers a new service for a given server identified by its address
+     * @param request
+     * @param responseObserver
+     */
+
     @Override
     public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
         if (request.getAddress().contains(":")) {
@@ -61,6 +67,11 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
     }
 
+    /**
+     * returns all eligible servers given required server qualifiers
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void lookup(LookupRequest request, StreamObserver<LookupResponse> responseObserver) {
         LOGGER.info("Searching for: " + Arrays.toString(request.getQualifiersList().toArray()) + " at " + request.getServiceName());
@@ -73,6 +84,11 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         responseObserver.onCompleted();
     }
 
+    /**
+     * returns all servers registered on name server
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void list(ClassServerNamingServer.ListRequest request, StreamObserver<ClassServerNamingServer.ListResponse> responseObserver) {
         LOGGER.info("Listing available servers...");
@@ -92,6 +108,11 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         responseObserver.onCompleted();
     }
 
+    /**
+     *  deletes a given server for a given service
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void delete(DeleteRequest request, StreamObserver<DeleteResponse> responseObserver) {
         LOGGER.info("Removing " + request.getAddress() + " from " + request.getServiceName());

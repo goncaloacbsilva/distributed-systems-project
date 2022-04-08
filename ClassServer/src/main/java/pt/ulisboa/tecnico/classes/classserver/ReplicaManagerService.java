@@ -29,6 +29,11 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         LOGGER.info("Started with debug mode enabled");
     }
 
+    /**
+     * propagates the primary servers state by pushing to the secondary server
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void propagateStatePush(ReplicaManagerClassServer.PropagateStatePushRequest request, StreamObserver<ReplicaManagerClassServer.PropagateStatePushResponse> responseObserver) {
         ReplicaManagerClassServer.PropagateStatePushResponse.Builder response = ReplicaManagerClassServer.PropagateStatePushResponse.newBuilder();
@@ -61,6 +66,11 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         responseObserver.onCompleted();
     }
 
+    /**
+     * propagates the primary servers state by the secondary server pulling the primary servers state
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void propagateStatePull(ReplicaManagerClassServer.PropagateStatePullRequest request, StreamObserver<ReplicaManagerClassServer.PropagateStatePullResponse> responseObserver) {
         ReplicaManagerClassServer.PropagateStatePullResponse.Builder response = ReplicaManagerClassServer.PropagateStatePullResponse.newBuilder();

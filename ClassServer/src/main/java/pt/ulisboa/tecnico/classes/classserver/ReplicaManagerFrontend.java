@@ -52,6 +52,9 @@ public class ReplicaManagerFrontend {
     this._previousTimestamps = new HashMap<String, Integer>(this._timestamps);
   }
 
+  /**
+   * updates the local timestamps
+   */
   public void updateTimestamp() {
     this._timestamps.put(this._address, this._timestamps.get(this._address) + 1);
     LOGGER.info(
@@ -70,7 +73,9 @@ public class ReplicaManagerFrontend {
     _channel = ManagedChannelBuilder.forTarget(address).usePlaintext().build();
     this._stub = ReplicaManagerGrpc.newBlockingStub(_channel);
   }
-
+  /**
+   * propagates the primary servers state by pushing to the secondary server
+   */
   public void propagateStatePush() {
     if (!this._previousTimestamps.equals(this._timestamps) && _properties.get("isActive") && _properties.get("isPrimary")) {
       LOGGER.info("Propagating State...");
@@ -100,6 +105,9 @@ public class ReplicaManagerFrontend {
     }
   }
 
+  /**
+   * propagates the primary servers state by the secondary server pulling the primary servers state
+   */
   public void propagateStatePull() {
     // if primary server, class object is already up-to-date TODO: change this condition for phase 3
     if (_properties.get("isActive")) {
