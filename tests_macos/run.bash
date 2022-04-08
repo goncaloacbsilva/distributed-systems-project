@@ -25,7 +25,7 @@ testone() {
 
 	(
 		set -e # exit (this subshell) on first error
-		(cd ..; mvn -q -pl "${module}" -Dexec.args="$arguments" exec:java) < "${input_file}" > "${actual_output_file}" 2>/dev/null
+		(cd ..; mvn -q -pl "${module}" -e -Dexec.args="$arguments" exec:java) < "${input_file}" > "${actual_output_file}" 2>/dev/null
 		"${DIFF}" -w "${expected_output_file}" <(tail -n "${expected_line_count}" "${actual_output_file}")
 	)
 }

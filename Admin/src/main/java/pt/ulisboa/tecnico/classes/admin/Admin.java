@@ -40,23 +40,27 @@ public class Admin {
       String command = commandArgs[0];
       String qualifier;
 
+      if (args.length < 2) {
+        // If no qualifier is provided assume P as default
+        qualifier = "P";
+      } else {
+        qualifier = commandArgs[1];
+      }
+
       try {
 
         switch (command) {
 
           case DUMP_CMD -> {
-            qualifier = commandArgs[1];
             ClassesDefinitions.ClassState classState = frontend.dump(List.of(qualifier));
             System.out.println(Stringify.format(classState));
           }
 
           case ACTIVATE_CMD -> {
-            qualifier = commandArgs[1];
             System.out.println(Stringify.format(frontend.activate(List.of(qualifier))));
           }
 
           case DEACTIVATE_CMD -> {
-            qualifier = commandArgs[1];
             System.out.println(Stringify.format(frontend.deactivate(List.of(qualifier))));
           }
 

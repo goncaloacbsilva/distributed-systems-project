@@ -96,7 +96,7 @@ public class ReplicaManagerFrontend {
         ReplicaManagerClassServer.PropagateStatePushResponse response = _stub.propagateStatePush(request.build());
 
         if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
-          this._previousTimestamps = this._timestamps;
+          this._previousTimestamps = new HashMap<>(this._timestamps);
         }
 
         LOGGER.info("[ReplicaManager Frontend] Propagated Timestamps: " + this._timestamps);
