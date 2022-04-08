@@ -15,8 +15,6 @@ public abstract class TimestampsManager {
         for(ClassServerNamingServer.ServerEntry entry : nameServer.list()) {
             this._timestamps.put(entry.getAddress(), 0);
         }
-
-        System.out.println("[TIMESTAMPS INIT]: " + this._timestamps);
     }
 
     public HashMap<String, Integer> getTimestamps() {
