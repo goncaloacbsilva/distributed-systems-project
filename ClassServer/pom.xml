@@ -13,7 +13,9 @@
 
     <properties>
         <mainClass>pt.ulisboa.tecnico.classes.classserver.ClassServer</mainClass>
+        <server.host>localhost</server.host>
         <server.port>2001</server.port>
+        <server.qualifiers>P S</server.qualifiers>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -69,7 +71,9 @@
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
                     <arguments>
+                        <argument>${server.host}</argument>
                         <argument>${server.port}</argument>
+                        <argument>${server.qualifiers}</argument>
                     </arguments>
                 </configuration>
             </plugin>

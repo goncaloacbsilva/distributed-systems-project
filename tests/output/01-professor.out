@@ -10,10 +10,9 @@ args[1] = 2001
 	discarded=[]
 }
 
-> The action completed successfully.
-
+> 
 > ClassState{
-	capacity=1,
+	capacity=0,
 	openEnrollments=true,
 	enrolled=[],
 	discarded=[]

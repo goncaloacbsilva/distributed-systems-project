@@ -13,6 +13,7 @@
 
     <properties>
         <mainClass>pt.ulisboa.tecnico.classes.namingserver.NamingServer</mainClass>
+        <server.port>5000</server.port>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -25,6 +26,12 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>Contract</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>pt.ulisboa.tecnico.classes.T40</groupId>
+            <artifactId>Utilities</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -62,6 +69,7 @@
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
                     <arguments>
+                        <argument>${server.port}</argument>
                     </arguments>
                 </configuration>
             </plugin>

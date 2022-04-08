@@ -1,36 +1,12 @@
 Student
-Received 4 Argument(s)
-args[0] = localhost
-args[1] = 2001
-args[2] = aluno1001
-args[3] = Manuel Goucha
-
-> ClassState{
-	capacity=1,
-	openEnrollments=true,
-	enrolled=[],
-	discarded=[
-		Student{
-			Id='aluno1000',
-			Name='Cristina Ferreira'
-		}]
-}
-
-> The action completed successfully.
-
-> ClassState{
-	capacity=1,
-	openEnrollments=true,
-	enrolled=[
-		Student{
-			Id='aluno1001',
-			Name='Manuel Goucha'
-		}],
-	discarded=[
-		Student{
-			Id='aluno1000',
-			Name='Cristina Ferreira'
-		}]
-}
-
-> 
+Received 3 Argument(s)
+args[0] = aluno1001
+args[1] = Manuel
+args[2] = Goucha
+[ERROR] Failed to execute goal org.codehaus.mojo:exec-maven-plugin:3.0.0:java (default-cli) on project Student: An exception occured while executing the Java class. Index 3 out of bounds for length 3 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

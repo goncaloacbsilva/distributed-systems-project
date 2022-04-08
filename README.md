@@ -4,19 +4,16 @@ Distributed Systems Project 2021/2022
 
 ## Authors
 
-
 **Group T40**
-
 
 ### Team Members
 
-*(fill the table below with the team members, and then delete this line)*
 
-| Number | Name             | User                               | Email                                       |
-|--------|------------------|------------------------------------|---------------------------------------------|
-| 96925  | Gonçalo Silva    | https://github.com/goncaloacbsilva | goncalo.c.brito.da.silva@tecnico.ulisboa.pt |
-| 93733  | Manuel Carneiro  | https://github.com/ManuMaquina     | manuel.picoto.carneiro@tecnico.ulisboa.pt   |
-| 93733  | Gonçalo Ferreira | https://github.com/ist193712       | barros.ferreira@tecnico.ulisboa.pt          |
+| Number | Name             | User                             | Email                               |
+|---|------------------|----------------------------------|-------------------------------------|
+| 96925 | Gonçalo Silva    | <https://github.com/goncaloacbsilva>   | <mailto:goncalo.c.brito.da.silva@tecnico.ulisboa.pt>   |
+| 93712 | Gonçalo Ferreira | <https://github.com/ist193712>     | <mailto:bob@tecnico.ulisboa.pt>     |
+| 93733 | Manuel Carneiro  | <https://github.com/ManuMaquina> | <mailto:charlie@tecnico.ulisboa.pt> |
 
 ## Getting Started
 

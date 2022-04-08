@@ -4,35 +4,18 @@ args[0] = localhost
 args[1] = 2001
 
 > ClassState{
-	capacity=1,
+	capacity=0,
 	openEnrollments=true,
-	enrolled=[
-		Student{
-			Id='aluno1001',
-			Name='Manuel Goucha'
-		}],
-	discarded=[
-		Student{
-			Id='aluno1000',
-			Name='Cristina Ferreira'
-		}]
+	enrolled=[],
+	discarded=[]
 }
 
-> The action completed successfully.
-
+> 
 > ClassState{
-	capacity=1,
+	capacity=0,
 	openEnrollments=false,
-	enrolled=[
-		Student{
-			Id='aluno1001',
-			Name='Manuel Goucha'
-		}],
-	discarded=[
-		Student{
-			Id='aluno1000',
-			Name='Cristina Ferreira'
-		}]
+	enrolled=[],
+	discarded=[]
 }
 
 > 

@@ -3,10 +3,13 @@ package pt.ulisboa.tecnico.classes.classserver;
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +19,9 @@ import java.util.logging.Logger;
  */
 public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
-    private ClassObject object;
+    private ClassStateWrapper _classObj;
+    private final ReplicaManagerFrontend _replicaManger;
+    private final HashMap<String, Boolean> _properties;
     private static final Logger LOGGER = Logger.getLogger(StudentService.class.getName());
 
     /**
@@ -25,9 +30,11 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param obj         shared object
      * @param enableDebug debug flag
      */
-    public StudentService(ClassObject obj, boolean enableDebug) {
-
-        this.object = obj;
+    public StudentService(ClassStateWrapper obj, boolean enableDebug, HashMap<String, Boolean> properties, ReplicaManagerFrontend replicaManger) {
+        super();
+        this._classObj = obj;
+        _replicaManger = replicaManger;
+        this._properties = properties;
 
         if (!enableDebug) {
             LOGGER.setLevel(Level.OFF);
@@ -44,52 +51,52 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param responseObserver
      */
     @Override
-    public synchronized void enroll(
-            StudentClassServer.EnrollRequest request,
-            StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
-        LOGGER.info("Received enroll request");
-        ClassesDefinitions.Student student = request.getStudent();
-        int student_index = this.object.getClassState().getEnrolledList().indexOf(student);
-        int enrolled = this.object.getClassState().getEnrolledList().size();
-        int capacity = this.object.getClassState().getCapacity();
-        boolean isOpen = this.object.getClassState().getOpenEnrollments();
+    public void enroll(StudentClassServer.EnrollRequest request, StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
+        StudentClassServer.EnrollResponse.Builder response = StudentClassServer.EnrollResponse.newBuilder();
 
-        if (!isOpen) {
-            responseObserver.onNext(
-                    StudentClassServer.EnrollResponse.newBuilder()
-                            .setCode(ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED)
-                            .build());
-        } else if (student_index != -1) {
-            responseObserver.onNext(
-                    StudentClassServer.EnrollResponse.newBuilder()
-                            .setCode(ClassesDefinitions.ResponseCode.STUDENT_ALREADY_ENROLLED)
-                            .build());
-            LOGGER.info("Set response as Student is already enrolled");
-        } else if (capacity < enrolled + 1) {
-            responseObserver.onNext(
-                    StudentClassServer.EnrollResponse.newBuilder()
-                            .setCode(ClassesDefinitions.ResponseCode.FULL_CLASS)
-                            .build());
-            LOGGER.info("Set response as Full Class");
-        } else {
-            LOGGER.info("Building new class state");
-            ClassesDefinitions.ClassState.Builder newObject = ClassesDefinitions.ClassState.newBuilder();
-            newObject.setCapacity(this.object.getClassState().getCapacity());
-            newObject.setOpenEnrollments(this.object.getClassState().getOpenEnrollments());
-            List<ClassesDefinitions.Student> enrolled_list =
-                    new ArrayList<>(this.object.getClassState().getEnrolledList());
-            enrolled_list.add(student);
-            newObject.addAllEnrolled(enrolled_list);
-            newObject.addAllDiscarded(this.object.getClassState().getDiscardedList());
-            this.object.setClassState(newObject.build());
-            LOGGER.info("class state built");
-            responseObserver.onNext(
-                    StudentClassServer.EnrollResponse.newBuilder()
-                            .setCode(ClassesDefinitions.ResponseCode.OK)
-                            .build());
-            LOGGER.info("Set response as OK");
+        if (!_properties.get("isActive")) {
+            response.setCode(ResponseCode.INACTIVE_SERVER);
+
         }
-        LOGGER.info("Sending enroll response");
+        else if (!_properties.get("isPrimary")) {
+            response.setCode(ResponseCode.WRITING_NOT_SUPPORTED);
+
+        } else {
+            synchronized (this._classObj) {
+                LOGGER.info("Received enroll request");
+                ClassesDefinitions.Student student = request.getStudent();
+                ClassesDefinitions.ClassState currentClassState = this._classObj.getClassState();
+
+                int enrolledCount = currentClassState.getEnrolledList().size();
+                int capacity = currentClassState.getCapacity();
+
+                if (!currentClassState.getOpenEnrollments()) {
+                    response.setCode(ResponseCode.ENROLLMENTS_ALREADY_CLOSED);
+
+                } else if (currentClassState.getEnrolledList().contains(student)) {
+                    response.setCode(ResponseCode.STUDENT_ALREADY_ENROLLED);
+
+                } else if (capacity < enrolledCount + 1) {
+                    response.setCode(ResponseCode.FULL_CLASS);
+
+                } else {
+                    LOGGER.info("Building new class state");
+                    ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
+                    classStateBuilder.addEnrolled(student);
+                    this._classObj.setClassState(classStateBuilder.build());
+                    LOGGER.info("Class state built");
+
+                    response.setCode(ResponseCode.OK);
+                    LOGGER.info("Set response as OK");
+                    //TODO : verificar se gossip esta ativo (entrega 3)
+                    _replicaManger.updateTimestamp();
+                }
+
+                LOGGER.info("Sending enroll response");
+            }
+        }
+
+        responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
 
@@ -101,18 +108,18 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param responseObserver
      */
     @Override
-    public void listClass(
-            StudentClassServer.ListClassRequest request,
-            StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
-        LOGGER.info("Received listClass request");
-        StudentClassServer.ListClassResponse.Builder response =
-                StudentClassServer.ListClassResponse.newBuilder();
-        response.setClassState(this.object.getClassState());
-        LOGGER.info(
-                "Sending list response with class state: \n" + Stringify.format(response.getClassState()));
-        response.setCodeValue(ClassesDefinitions.ResponseCode.OK_VALUE);
-        LOGGER.info("Set response as OK");
-        LOGGER.info("Sending listClass response");
+    public void listClass(StudentClassServer.ListClassRequest request, StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
+        StudentClassServer.ListClassResponse.Builder response = StudentClassServer.ListClassResponse.newBuilder();
+
+        if (!_properties.get("isActive")) {
+            response.setCode(ResponseCode.INACTIVE_SERVER);
+
+        } else {
+
+            LOGGER.info("Received dump request");
+            response.setClassState(this._classObj.getClassState());
+        }
+
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }

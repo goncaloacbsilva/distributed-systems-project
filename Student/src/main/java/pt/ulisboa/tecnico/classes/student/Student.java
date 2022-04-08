@@ -1,7 +1,5 @@
 package pt.ulisboa.tecnico.classes.student;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
@@ -27,49 +25,56 @@ public class Student {
             System.out.printf("args[%d] = %s%n", i, args[i]);
         }
 
-        if (!(args[3].length() >= 3)) {
-            System.out.printf("invalid student name too small ");
+        if (args.length < 2) {
+            System.err.println("Argument(s) missing!");
+            System.err.printf("Usage: java %s student_id student_name%n", Student.class.getName());
+            return;
         }
-        if (!(args[3].length() <= 30)) {
-            System.out.printf("invalid student name too big ");
+
+        final String studentID = args[0];
+        final String studentName = args[1];
+
+        if (!(studentName.length() >= 3)) {
+            System.out.printf("Invalid student name too small ");
         }
-        final String host = args[0];
-        final int port = Integer.parseInt(args[1]);
-        final String studentID = args[2];
-        final String studentName = args[3];
+        if (!(studentName.length() <= 30)) {
+            System.out.printf("Invalid student name too big ");
+        }
 
-        final ManagedChannel channel =
-                ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-
-        final StudentFrontend frontend = new StudentFrontend(channel, studentID, studentName);
+        final StudentFrontend frontend = new StudentFrontend(studentID, studentName);
 
         Scanner scanner = new Scanner(System.in);
+
 
         while (true) {
 
             System.out.printf("%n> ");
 
             String line = scanner.nextLine();
+            String commandArgs[] = line.split(" ", 2);
+            String command = commandArgs[0];
 
-            // exit
-            if (EXIT_CMD.equals(line)) {
-                scanner.close();
-                System.exit(0);
-            }
+            try {
 
-            // enroll
-            else if (ENROLL_CMD.equals(line)) {
-                frontend.EnrollStudent();
-            }
+                switch (command) {
 
-            // list
-            else if (LIST_CMD.equals(line)) {
-                try {
-                    ClassesDefinitions.ClassState classState = frontend.List();
-                    System.out.println(Stringify.format(classState));
-                } catch (ResponseException exception) {
-                    System.out.println(Stringify.format(exception.getResponseCode()));
+                    case EXIT_CMD -> {
+                        scanner.close();
+                        System.exit(0);
+                    }
+
+                    case ENROLL_CMD -> {
+                        System.out.println(Stringify.format(frontend.enrollStudent()));
+                    }
+
+                    case LIST_CMD -> {
+                        ClassesDefinitions.ClassState classState = frontend.list();
+                        System.out.println(Stringify.format(classState));
+                    }
                 }
+
+            } catch (ResponseException exception) {
+                System.out.println(Stringify.format(exception.getResponseCode()));
             }
         }
     }

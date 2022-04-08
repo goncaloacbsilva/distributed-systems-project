@@ -25,3 +25,6 @@ enum ResponseCode {
   INACTIVE_SERVER = 6;
   WRITING_NOT_SUPPORTED = 7;
 }
+
+
+

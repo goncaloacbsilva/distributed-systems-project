@@ -1,49 +1,62 @@
 package pt.ulisboa.tecnico.classes.student;
 
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
+import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.TimestampsManager;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.Student;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /** This class abstracts all the stub calls executed by the Student client */
-public class StudentFrontend {
+public class StudentFrontend extends TimestampsManager {
 
-  private final StudentServiceGrpc.StudentServiceBlockingStub _stub;
-  private final ClassesDefinitions.Student _student;
+  private final NameServerFrontend _nameServer;
+  private StudentServiceGrpc.StudentServiceBlockingStub _stub;
+  private final Student _student;
 
   /**
    * creates an instance of StudentFrontend
    *
-   * @param channel
    * @param studentID
    * @param studentName
    */
-  public StudentFrontend(ManagedChannel channel, String studentID, String studentName) {
+  public StudentFrontend(String studentID, String studentName) {
+    super(new NameServerFrontend());
+    this._nameServer = new NameServerFrontend();
+    this._student = Student.newBuilder().setStudentId(studentID).setStudentName(studentName).build();
+  }
 
-    this._stub = StudentServiceGrpc.newBlockingStub(channel);
-    this._student =
-        ClassesDefinitions.Student.newBuilder()
-            .setStudentId(studentID)
-            .setStudentName(studentName)
-            .build();
+  private void getNewStubWithQualifiers(List<String> qualifiers, boolean previousIsInactive) {
+    this._stub = StudentServiceGrpc.newBlockingStub(_nameServer.getChannel(StudentServiceGrpc.SERVICE_NAME, qualifiers, previousIsInactive));
   }
 
   /**
    * Sends an enroll request to the server and enrolls a student if is possible * prints the
    * response code
    */
-  public void EnrollStudent() {
-    try {
-      StudentClassServer.EnrollRequest request =
-          StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
-      StudentClassServer.EnrollResponse response = this._stub.enroll(request);
-      System.out.println(Stringify.format(response.getCode()));
-    } catch (RuntimeException e) {
-      e.printStackTrace();
+  public ResponseCode enrollStudent() throws StatusRuntimeException, ResponseException {
+    getNewStubWithQualifiers(List.of("P"), false);
+
+    StudentClassServer.EnrollRequest request = StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
+    StudentClassServer.EnrollResponse response = _stub.enroll(request);
+
+    if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+      getNewStubWithQualifiers(List.of("P"), true);
+      return this.enrollStudent();
     }
+
+    return response.getCode();
   }
 
   /**
@@ -53,13 +66,23 @@ public class StudentFrontend {
    * @return
    * @throws ResponseException
    */
-  public ClassesDefinitions.ClassState List() throws ResponseException {
+  public ClassState list() throws StatusRuntimeException, ResponseException {
+    getNewStubWithQualifiers(new ArrayList<>(), false);
 
-    StudentClassServer.ListClassResponse response =
-        this._stub.listClass(StudentClassServer.ListClassRequest.newBuilder().build());
+    StudentClassServer.ListClassRequest.Builder request = StudentClassServer.ListClassRequest.newBuilder();
 
-    if (response.getCode().getNumber() == ClassesDefinitions.ResponseCode.OK_VALUE)
+    request.putAllTimestamps(this.getTimestamps());
+
+    StudentClassServer.ListClassResponse response = _stub.listClass(request.build());
+
+    if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
+      getNewStubWithQualifiers(new ArrayList<>(), true);
+      return this.list();
+    }
+    else if (response.getCode() == ResponseCode.OK) {
+      this.setTimestamps(response.getTimestampsMap());
       return response.getClassState();
+    }
     else {
       throw new ResponseException(response.getCode());
     }

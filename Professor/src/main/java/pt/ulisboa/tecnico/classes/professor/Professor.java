@@ -1,10 +1,11 @@
 package pt.ulisboa.tecnico.classes.professor;
 
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 import java.util.Scanner;
 
@@ -24,62 +25,50 @@ public class Professor {
      */
     public static void main(String[] args) {
         System.out.println(Professor.class.getSimpleName());
-        System.out.printf("Received %d Argument(s)%n", args.length);
-        for (int i = 0; i < args.length; i++) {
-            System.out.printf("args[%d] = %s%n", i, args[i]);
-        }
 
-
-        if (args.length < 2) {
-            System.err.println("Argument(s) missing!");
-            System.err.printf("Usage: java %s  host %n port%n", Professor.class.getName());
-            return;
-        }
-
-        String host = String.valueOf(args[0]);
-        Integer port = Integer.valueOf(args[1]);
-
-
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-
-        ProfessorFrontend frontend = new ProfessorFrontend(channel);
+        ProfessorFrontend frontend = new ProfessorFrontend();
 
         Scanner lineReader = new Scanner(System.in);
 
         while (true) {
             System.out.printf("%n> ");
-            String command = lineReader.nextLine();
-            String commandArgs[] = command.split(" ", 2);
+            String line = lineReader.nextLine();
+            String commandArgs[] = line.split(" ", 2);
+            String command = commandArgs[0];
 
-            if (commandArgs[0].equals(LIST_COMMAND)) {
-                try {
-                    ClassesDefinitions.ClassState classState = frontend.listCommand();
-                    System.out.println(Stringify.format(classState));
-                } catch (ResponseException exception) {
-                    System.out.println(Stringify.format(exception.getResponseCode()));
+            try {
+
+                switch (command) {
+
+                    case LIST_COMMAND -> {
+                        ClassesDefinitions.ClassState classState = frontend.list();
+                        System.out.println(Stringify.format(classState));
+                    }
+
+                    case OPEN_ENROLLMENTS_COMMAND -> {
+                        System.out.println(Stringify.format(frontend.openEnrollmentsCommand(Integer.parseInt(commandArgs[1]))));
+                    }
+
+                    case CLOSE_ENROLLMENTS_COMMAND -> {
+                        System.out.println(Stringify.format(frontend.closeEnrollmentsCommand()));
+                    }
+
+                    case CANCEL_ENROLLMENTS_COMMAND -> {
+                        System.out.println(Stringify.format(frontend.cancelEnrollmentCommand(commandArgs[1])));
+                    }
+
+                    case EXIT_COMMAND -> {
+                        lineReader.close();
+                        System.exit(0);
+                    }
+
                 }
-            }
 
-            if (commandArgs[0].equals(OPEN_ENROLLMENTS_COMMAND)) {
-                frontend.openEnrollmentsCommand(commandArgs[1]);
-            }
-
-            if (commandArgs[0].equals(CLOSE_ENROLLMENTS_COMMAND)) {
-                frontend.closeEnrollmentsCommand();
-            }
-
-            if (commandArgs[0].equals(CANCEL_ENROLLMENTS_COMMAND)) {
-                frontend.cancelEnrollmentCommand(commandArgs[1]);
-            }
-
-            if (commandArgs[0].equals(EXIT_COMMAND)) {
-                channel.shutdown();
-                lineReader.close();
-                System.exit(0);
+            } catch (ResponseException exception) {
+                System.out.println(Stringify.format(exception.getResponseCode()));
             }
 
         }
-
 
     }
 }

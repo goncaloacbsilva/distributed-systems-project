@@ -1,26 +1,43 @@
 package pt.ulisboa.tecnico.classes.admin;
 
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
+
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /** This class abstracts all the stub calls executed by the Admin client */
 public class AdminFrontend {
 
-  private final AdminServiceGrpc.AdminServiceBlockingStub stub;
+  private ManagedChannel _channel;
+  private final NameServerFrontend _nameServer;
+  private AdminServiceGrpc.AdminServiceBlockingStub _stub;
+
 
   /**
    * Creates an instance of AdminFrontend
    *
-   * @param channel gRPC channel
    * @see AdminFrontend
    */
-  public AdminFrontend(ManagedChannel channel) {
-    stub = AdminServiceGrpc.newBlockingStub(channel);
+  public AdminFrontend() {
+    this._nameServer = new NameServerFrontend();
+  }
+
+  private void getNewStubWithQualifiers(List<String> qualifiers) {
+    if (_channel != null) {
+      _channel.shutdown();
+    }
+    _channel = ManagedChannelBuilder.forTarget(_nameServer.lookup(AdminServiceGrpc.SERVICE_NAME, qualifiers).getAddress()).usePlaintext().build();
+    this._stub = AdminServiceGrpc.newBlockingStub(_channel);
   }
 
   /**
@@ -31,13 +48,28 @@ public class AdminFrontend {
    * @throws StatusRuntimeException
    * @throws ResponseException
    */
-  public ClassState dump() throws StatusRuntimeException, ResponseException {
-    AdminClassServer.DumpResponse response =
-        stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
+  public ClassState dump(List<String> qualifiers) throws StatusRuntimeException, ResponseException {
+    getNewStubWithQualifiers(qualifiers);
+    AdminClassServer.DumpResponse response = _stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
+
     if (response.getCode() == ResponseCode.OK) {
       return response.getClassState();
     } else {
       throw new ResponseException(response.getCode());
     }
+  }
+
+  public ResponseCode activate(List<String> qualifiers) throws StatusRuntimeException {
+    getNewStubWithQualifiers(qualifiers);
+    AdminClassServer.ActivateResponse response = _stub.activate(AdminClassServer.ActivateRequest.getDefaultInstance());
+
+    return response.getCode();
+  }
+
+  public ResponseCode deactivate(List<String> qualifiers) throws StatusRuntimeException {
+    getNewStubWithQualifiers(qualifiers);
+    AdminClassServer.DeactivateResponse response = _stub.deactivate(AdminClassServer.DeactivateRequest.getDefaultInstance());
+
+    return response.getCode();
   }
 }

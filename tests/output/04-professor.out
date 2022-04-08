@@ -4,29 +4,21 @@ args[0] = localhost
 args[1] = 2001
 
 > ClassState{
-	capacity=1,
+	capacity=0,
 	openEnrollments=true,
-	enrolled=[
-		Student{
-			Id='aluno1000',
-			Name='Cristina Ferreira'
-		}],
+	enrolled=[],
 	discarded=[]
 }
 
 > The student does not exist.
 
-> The action completed successfully.
+> The student does not exist.
 
 > ClassState{
-	capacity=1,
+	capacity=0,
 	openEnrollments=true,
 	enrolled=[],
-	discarded=[
-		Student{
-			Id='aluno1000',
-			Name='Cristina Ferreira'
-		}]
+	discarded=[]
 }
 
 > 

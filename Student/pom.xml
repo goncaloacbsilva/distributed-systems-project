@@ -13,8 +13,6 @@
 
     <properties>
         <mainClass>pt.ulisboa.tecnico.classes.student.Student</mainClass>
-        <server.host>localhost</server.host>
-        <server.port>2001</server.port>
         <client.id>aluno0012</client.id>
         <client.name>João Freire</client.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -70,8 +68,6 @@
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
                     <arguments>
-                        <argument>${server.host}</argument>
-                        <argument>${server.port}</argument>
                         <argument>${client.id}</argument>>
                         <argument>${client.name}</argument>
                     </arguments>
