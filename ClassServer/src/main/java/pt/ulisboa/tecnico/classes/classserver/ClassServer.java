@@ -55,6 +55,7 @@ public class ClassServer {
     _properties = new HashMap<String, Boolean>();
     _properties.put("isActive", true);
     _properties.put("isPrimary", qualifiers.contains("P"));
+    _properties.put("GossipActive", true);
 
     _timestamps = new HashMap<>();
 
@@ -64,7 +65,7 @@ public class ClassServer {
     ClassStateWrapper classObj = new ClassStateWrapper();
     final ReplicaManagerFrontend replicaManagerFrontend = new ReplicaManagerFrontend(classObj, _enableLogging, _properties, nameServer, address, _timestamps);
 
-    final BindableService adminService = new AdminService(classObj, _enableLogging, _properties);
+    final BindableService adminService = new AdminService(classObj, _enableLogging, _properties, replicaManagerFrontend);
     final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties, replicaManagerFrontend);
     final BindableService replicaManagerService = new ReplicaManagerService(classObj, _enableLogging, _properties, address, _timestamps);
     final BindableService studentService = new StudentService(classObj, _enableLogging, _properties, replicaManagerFrontend);

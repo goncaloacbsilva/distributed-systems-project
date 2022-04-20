@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.stub.StreamObserver;
+import pt.ulisboa.tecnico.classes.TimestampsManager;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.classserver.ReplicaManagerGrpc;
 import pt.ulisboa.tecnico.classes.contract.classserver.ReplicaManagerClassServer;
@@ -12,14 +13,14 @@ import java.util.logging.Logger;
 
 public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImplBase {
     private ClassStateWrapper _classObj;
-    private HashMap<String, Integer> _timestamps;
+    private TimestampsManager _timestampsManager;
     private final HashMap<String, Boolean> _properties;
     private static final Logger LOGGER = Logger.getLogger(ReplicaManagerService.class.getName());
     private String _address;
 
     public ReplicaManagerService(ClassStateWrapper classObj, boolean enableDebug, HashMap<String, Boolean> properties, String address, HashMap<String, Integer> timestamps) {
         this._classObj = classObj;
-        this._timestamps = timestamps;
+        this._timestampsManager = new TimestampsManager(timestamps);
         this._properties = properties;
         this._address = address;
 
@@ -30,20 +31,10 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         LOGGER.info("Started with debug mode enabled");
     }
 
-    private void updateTimestamps(Map<String, Integer> newTimestamps) {
-        for (String replica : this._timestamps.keySet()) {
-            if (newTimestamps.containsKey(replica) && !replica.equals(_address)) {
-                int newTimestampValue = newTimestamps.get(replica);
-
-                if (this._timestamps.get(replica) < newTimestampValue) {
-                    this._timestamps.put(replica, newTimestampValue);
-                }
-            }
-        }
-    }
 
     /**
      * propagates the primary servers state by pushing to the secondary server
+     *
      * @param request
      * @param responseObserver
      */
@@ -58,10 +49,10 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
 
             int currentValue;
 
-            if (this._timestamps.containsKey(request.getPrimaryAddress())) {
-                currentValue = this._timestamps.get(request.getPrimaryAddress());
+            if (this._timestampsManager.getTimestamps().containsKey(request.getPrimaryAddress())) {
+                currentValue = this._timestampsManager.getTimestamps().get(request.getPrimaryAddress());
             } else {
-                this._timestamps.put(request.getPrimaryAddress(), 0);
+                this._timestampsManager.putTimestamp(request.getPrimaryAddress(), 0);
                 currentValue = 0;
             }
 
@@ -74,13 +65,13 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
 
                 this._classObj.setClassState(request.getClassState());
 
-                this.updateTimestamps(request.getTimestampsMap());
+                this._timestampsManager.updateTimestamps(request.getTimestampsMap());
 
                 LOGGER.info("Set response as OK");
                 response.setCode(ClassesDefinitions.ResponseCode.OK);
 
                 LOGGER.info("Sending propagateStatePush response");
-                LOGGER.info("[ReplicaManager] Updated State to: " + this._timestamps);
+                LOGGER.info("[ReplicaManager] Updated State to: " + this._timestampsManager.getTimestamps());
             }
 
         }
@@ -88,8 +79,6 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
-
-
 
 
     // TODO: Decide whether we should also use Pull strategy

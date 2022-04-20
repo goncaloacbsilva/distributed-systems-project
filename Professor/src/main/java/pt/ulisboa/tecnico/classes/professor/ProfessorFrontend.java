@@ -56,7 +56,7 @@ public class ProfessorFrontend extends TimestampsManager {
         ProfessorClassServer.ListClassResponse response = _stub.listClass(request.build());
 
         if (response.getCode() == ResponseCode.OK) {
-            this.setTimestamps(response.getTimestampsMap());
+            this.updateTimestamps(response.getTimestampsMap());
             return response.getClassState();
         }
         else if (response.getCode() == ResponseCode.INACTIVE_SERVER) {

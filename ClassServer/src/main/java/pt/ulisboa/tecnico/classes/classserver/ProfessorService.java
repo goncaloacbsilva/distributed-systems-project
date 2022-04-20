@@ -27,8 +27,8 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      */
     public ProfessorService(ClassStateWrapper classObj, boolean enableDebug, HashMap<String, Boolean> properties, ReplicaManagerFrontend replicaManager) {
         super();
-        _classObj = classObj;
-        _replicaManager = replicaManager;
+        this._classObj = classObj;
+        this._replicaManager = replicaManager;
         this._properties = properties;
 
         if (!enableDebug) {
@@ -77,7 +77,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
-                    //TODO : check if gossip is active (phase 3)
+
                     
                     _replicaManager.updateTimestamp();
 
@@ -124,7 +124,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
-                    //TODO : check if gossip is active (phase 3)
+
                     _replicaManager.updateTimestamp();
                 }
             }
@@ -153,7 +153,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
         } else {
 
             LOGGER.info("Verifying state is up to date ");
-            //TODO : check if gossip is active (phase 3)
+            //TODO : check if still relevant commented line
             //_replicaManger.propagateStatePull(_properties.get("isPrimary"));
 
             LOGGER.info("Received dump request");
@@ -210,7 +210,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
 
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
-                    //TODO : check if gossip is active (phase 3)
+
                     _replicaManager.updateTimestamp();
                 } else {
                     response.setCode(ResponseCode.NON_EXISTING_STUDENT);

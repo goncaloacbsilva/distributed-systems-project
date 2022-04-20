@@ -80,7 +80,7 @@ public class StudentFrontend extends TimestampsManager {
       return this.list();
     }
     else if (response.getCode() == ResponseCode.OK) {
-      this.setTimestamps(response.getTimestampsMap());
+      this.updateTimestamps(response.getTimestampsMap());
       return response.getClassState();
     }
     else {
