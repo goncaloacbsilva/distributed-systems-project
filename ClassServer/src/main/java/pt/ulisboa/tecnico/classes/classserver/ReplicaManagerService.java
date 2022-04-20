@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.classes.contract.classserver.ReplicaManagerGrpc;
 import pt.ulisboa.tecnico.classes.contract.classserver.ReplicaManagerClassServer;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +30,18 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         LOGGER.info("Started with debug mode enabled");
     }
 
+    private void updateTimestamps(Map<String, Integer> newTimestamps) {
+        for (String replica : this._timestamps.keySet()) {
+            if (newTimestamps.containsKey(replica) && !replica.equals(_address)) {
+                int newTimestampValue = newTimestamps.get(replica);
+
+                if (this._timestamps.get(replica) < newTimestampValue) {
+                    this._timestamps.put(replica, newTimestampValue);
+                }
+            }
+        }
+    }
+
     /**
      * propagates the primary servers state by pushing to the secondary server
      * @param request
@@ -43,22 +56,32 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
 
         } else {
 
-            //TODO: Validate new >= current
+            int currentValue;
 
-            LOGGER.info("Received propagateStatePush request");
-            this._classObj.setClassState(request.getClassState());
+            if (this._timestamps.containsKey(request.getPrimaryAddress())) {
+                currentValue = this._timestamps.get(request.getPrimaryAddress());
+            } else {
+                this._timestamps.put(request.getPrimaryAddress(), 0);
+                currentValue = 0;
+            }
 
+            int newValue = request.getTimestampsMap().get(request.getPrimaryAddress());
 
-            this._timestamps.putAll(request.getTimestampsMap());
-            int primaryValue = this._timestamps.get(request.getPrimaryAddress());
-            this._timestamps.put(this._address, primaryValue);
+            LOGGER.info("Received propagateStatePush request \n" + "Current Version: " + currentValue + "\nIncoming: " + newValue);
 
-            LOGGER.info("Set response as OK");
+            if (newValue > currentValue) {
+                LOGGER.info("[ReplicaManager] Processing request...");
 
-            response.setCode(ClassesDefinitions.ResponseCode.OK);
+                this._classObj.setClassState(request.getClassState());
 
-            LOGGER.info("Sending propagateStatePush response");
-            LOGGER.info("[ReplicaManager] Updated State to: " + this._timestamps);
+                this.updateTimestamps(request.getTimestampsMap());
+
+                LOGGER.info("Set response as OK");
+                response.setCode(ClassesDefinitions.ResponseCode.OK);
+
+                LOGGER.info("Sending propagateStatePush response");
+                LOGGER.info("[ReplicaManager] Updated State to: " + this._timestamps);
+            }
 
         }
 
@@ -66,11 +89,16 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         responseObserver.onCompleted();
     }
 
+
+
+
+    // TODO: Decide whether we should also use Pull strategy
     /**
      * propagates the primary servers state by the secondary server pulling the primary servers state
      * @param request
      * @param responseObserver
      */
+    /*
     @Override
     public void propagateStatePull(ReplicaManagerClassServer.PropagateStatePullRequest request, StreamObserver<ReplicaManagerClassServer.PropagateStatePullResponse> responseObserver) {
         ReplicaManagerClassServer.PropagateStatePullResponse.Builder response = ReplicaManagerClassServer.PropagateStatePullResponse.newBuilder();
@@ -96,4 +124,6 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
+
+    */
 }

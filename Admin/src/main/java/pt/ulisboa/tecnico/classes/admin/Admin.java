@@ -44,7 +44,7 @@ public class Admin {
         // If no qualifier is provided assume P as default
         qualifier = "P";
       } else {
-        qualifier = commandArgs[1];
+        qualifier = args[0];
       }
 
       try {

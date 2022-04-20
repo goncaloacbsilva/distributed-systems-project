@@ -1,16 +1,12 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.stub.StreamObserver;
-import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +16,7 @@ import java.util.logging.Logger;
 public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
     private ClassStateWrapper _classObj;
-    private final ReplicaManagerFrontend _replicaManger;
+    private final ReplicaManagerFrontend _replicaManager;
     private final HashMap<String, Boolean> _properties;
     private static final Logger LOGGER = Logger.getLogger(StudentService.class.getName());
 
@@ -30,10 +26,10 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
      * @param obj         shared object
      * @param enableDebug debug flag
      */
-    public StudentService(ClassStateWrapper obj, boolean enableDebug, HashMap<String, Boolean> properties, ReplicaManagerFrontend replicaManger) {
+    public StudentService(ClassStateWrapper obj, boolean enableDebug, HashMap<String, Boolean> properties, ReplicaManagerFrontend replicaManager) {
         super();
         this._classObj = obj;
-        _replicaManger = replicaManger;
+        _replicaManager = replicaManager;
         this._properties = properties;
 
         if (!enableDebug) {
@@ -56,10 +52,6 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
         if (!_properties.get("isActive")) {
             response.setCode(ResponseCode.INACTIVE_SERVER);
-
-        }
-        else if (!_properties.get("isPrimary")) {
-            response.setCode(ResponseCode.WRITING_NOT_SUPPORTED);
 
         } else {
             synchronized (this._classObj) {
@@ -89,7 +81,7 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
                     //TODO : verificar se gossip esta ativo (entrega 3)
-                    _replicaManger.updateTimestamp();
+                    _replicaManager.updateTimestamp();
                 }
 
                 LOGGER.info("Sending enroll response");

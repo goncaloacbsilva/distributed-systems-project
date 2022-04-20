@@ -46,13 +46,13 @@ public class StudentFrontend extends TimestampsManager {
    * response code
    */
   public ResponseCode enrollStudent() throws StatusRuntimeException, ResponseException {
-    getNewStubWithQualifiers(List.of("P"), false);
+    getNewStubWithQualifiers(new ArrayList<>(), false);
 
     StudentClassServer.EnrollRequest request = StudentClassServer.EnrollRequest.newBuilder().setStudent(this._student).build();
     StudentClassServer.EnrollResponse response = _stub.enroll(request);
 
     if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-      getNewStubWithQualifiers(List.of("P"), true);
+      getNewStubWithQualifiers(new ArrayList<>(), true);
       return this.enrollStudent();
     }
 

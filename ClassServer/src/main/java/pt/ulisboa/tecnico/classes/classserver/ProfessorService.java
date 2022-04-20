@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplBase {
     private ClassStateWrapper _classObj;
-    private final ReplicaManagerFrontend _replicaManger;
+    private final ReplicaManagerFrontend _replicaManager;
     private final HashMap<String, Boolean> _properties;
     private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
 
@@ -25,10 +25,10 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param classObj    shared class state object
      * @param enableDebug debug flag
      */
-    public ProfessorService(ClassStateWrapper classObj, boolean enableDebug, HashMap<String, Boolean> properties, ReplicaManagerFrontend replicaManger) {
+    public ProfessorService(ClassStateWrapper classObj, boolean enableDebug, HashMap<String, Boolean> properties, ReplicaManagerFrontend replicaManager) {
         super();
         _classObj = classObj;
-        _replicaManger = replicaManger;
+        _replicaManager = replicaManager;
         this._properties = properties;
 
         if (!enableDebug) {
@@ -79,7 +79,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     LOGGER.info("Set response as OK");
                     //TODO : check if gossip is active (phase 3)
                     
-                    _replicaManger.updateTimestamp();
+                    _replicaManager.updateTimestamp();
 
                 }
             }
@@ -125,7 +125,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
                     //TODO : check if gossip is active (phase 3)
-                    _replicaManger.updateTimestamp();
+                    _replicaManager.updateTimestamp();
                 }
             }
 
@@ -211,7 +211,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
                     //TODO : check if gossip is active (phase 3)
-                    _replicaManger.updateTimestamp();
+                    _replicaManager.updateTimestamp();
                 } else {
                     response.setCode(ResponseCode.NON_EXISTING_STUDENT);
                     LOGGER.info("Set response as non existing student");

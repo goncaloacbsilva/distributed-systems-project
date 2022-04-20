@@ -77,11 +77,13 @@ public class ReplicaManagerFrontend {
    * propagates the primary servers state by pushing to the secondary server
    */
   public void propagateStatePush() {
-    if (!this._previousTimestamps.equals(this._timestamps) && _properties.get("isActive") && _properties.get("isPrimary")) {
+    if (!this._previousTimestamps.equals(this._timestamps) && _properties.get("isActive")) {
       LOGGER.info("Propagating State...");
+
+      // Propagate for all the servers except this one
       List<ClassServerNamingServer.ServerEntry> servers =
           this._nameServer.list().stream()
-              .filter(serverEntry -> serverEntry.getQualifiersList().contains("S"))
+              .filter(serverEntry -> !serverEntry.getAddress().equals(_address))
               .toList();
 
       for (ClassServerNamingServer.ServerEntry server : servers) {
@@ -105,9 +107,13 @@ public class ReplicaManagerFrontend {
     }
   }
 
+
+  // TODO: Decide whether we should also use Pull strategy
+
   /**
    * propagates the primary servers state by the secondary server pulling the primary servers state
    */
+  /*
   public void propagateStatePull() {
     // if primary server, class object is already up-to-date TODO: change this condition for phase 3
     if (_properties.get("isActive")) {
@@ -130,4 +136,5 @@ public class ReplicaManagerFrontend {
       }
     }
   }
+  */
 }
