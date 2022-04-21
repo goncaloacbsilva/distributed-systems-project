@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
+import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
@@ -72,7 +73,13 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
                     response.setCode(ResponseCode.FULL_CLASS);
 
                 } else {
+
                     LOGGER.info("Building new class state");
+
+                    // Set timestamp of the last change
+                    Timestamp lastChange = Timestamp.newBuilder().setSeconds(System.currentTimeMillis() / 1000).build();
+                    student = student.toBuilder().setLastChange(lastChange).build();
+
                     ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
                     classStateBuilder.addEnrolled(student);
                     this._classObj.setClassState(classStateBuilder.build());
