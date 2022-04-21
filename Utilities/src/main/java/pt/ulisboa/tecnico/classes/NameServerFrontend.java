@@ -77,6 +77,15 @@ public class NameServerFrontend {
     return this._stub.list(ClassServerNamingServer.ListRequest.getDefaultInstance()).getServersList();
   }
 
+  public boolean isPrimary(String address) {
+    for (ClassServerNamingServer.ServerEntry server : this.list()) {
+        if (server.getAddress().equals(address) && server.getQualifiersList().contains("P")) {
+          return true;
+        }
+    }
+    return false;
+  }
+
   /**
    * request all eligible servers given required server qualifiers
    * @param serviceName
