@@ -48,11 +48,11 @@ public class Admin {
             String command = commandArgs[0];
             String qualifier;
 
-            if (args.length < 1) {
+            if (commandArgs.length < 2) {
                 // If no qualifier is provided assume P as default
                 qualifier = "P";
             } else {
-                qualifier = args[0];
+                qualifier = commandArgs[1];
             }
 
             try {
