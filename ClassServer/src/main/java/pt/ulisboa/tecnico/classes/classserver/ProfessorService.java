@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.classes.classserver;
 
+import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
@@ -100,7 +101,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public  void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request, StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
+    public void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request, StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
         ProfessorClassServer.CloseEnrollmentsResponse.Builder response = ProfessorClassServer.CloseEnrollmentsResponse.newBuilder();
 
         if (!_properties.get("isActive")) {
@@ -120,6 +121,10 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     LOGGER.info("Building new class state");
                     ClassesDefinitions.ClassState.Builder classStateBuilder = this._classObj.getClassState().toBuilder();
                     classStateBuilder.setOpenEnrollments(false);
+
+                    Timestamp lastClose = Timestamp.newBuilder().setSeconds(System.currentTimeMillis() / 1000).build();
+                    classStateBuilder.setLastClose(lastClose);
+
                     this._classObj.setClassState(classStateBuilder.build());
 
                     response.setCode(ResponseCode.OK);
@@ -189,7 +194,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                 ClassesDefinitions.ClassState currentClassState = this._classObj.getClassState();
                 String studentToRemoveId = request.getStudentId();
 
-                LOGGER.info("Searching for student");
+                LOGGER.info("Searching for student with id: " + studentToRemoveId);
 
                 ClassesDefinitions.Student studentToDiscard = currentClassState.getEnrolledList()
                         .stream()
@@ -197,12 +202,19 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                         .findAny()
                         .orElse(null);
 
+                LOGGER.info("Removing student: " + studentToDiscard);
+
                 if (studentToDiscard != null) {
                     LOGGER.info("Removing student from enrolled and adding to discarded");
                     LOGGER.info("Building new class state");
                     ClassesDefinitions.ClassState.Builder classStateBuilder = currentClassState.toBuilder();
 
                     classStateBuilder.removeEnrolled(currentClassState.getEnrolledList().indexOf(studentToDiscard));
+
+                    // Set timestamp of the last change
+                    Timestamp lastChange = Timestamp.newBuilder().setSeconds(System.currentTimeMillis() / 1000).build();
+                    studentToDiscard = studentToDiscard.toBuilder().setLastChange(lastChange).build();
+
                     classStateBuilder.addDiscarded(studentToDiscard);
 
                     this._classObj.setClassState(classStateBuilder.build());
