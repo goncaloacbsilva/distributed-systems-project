@@ -67,7 +67,7 @@ public class ClassServer {
 
     final BindableService adminService = new AdminService(classObj, _enableLogging, _properties, replicaManagerFrontend);
     final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties, replicaManagerFrontend);
-    final BindableService replicaManagerService = new ReplicaManagerService(classObj, _enableLogging, _properties, address, _timestamps);
+    final BindableService replicaManagerService = new ReplicaManagerService(classObj, _enableLogging, _properties, nameServer, address, _timestamps);
     final BindableService studentService = new StudentService(classObj, _enableLogging, _properties, replicaManagerFrontend);
 
     Server server =
