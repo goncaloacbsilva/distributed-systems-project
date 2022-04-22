@@ -34,11 +34,11 @@ public class AdminFrontend {
         this._nameServer = new NameServerFrontend();
     }
 
-    private void getNewStubWithQualifiers(List<String> qualifiers) {
+    private void getNewStubWithQualifiers(List<String> qualifiers, String serverId) {
         if (_channel != null) {
             _channel.shutdown();
         }
-        _channel = ManagedChannelBuilder.forTarget(_nameServer.lookup(AdminServiceGrpc.SERVICE_NAME, qualifiers).getAddress()).usePlaintext().build();
+        _channel = ManagedChannelBuilder.forTarget(_nameServer.lookup(AdminServiceGrpc.SERVICE_NAME, qualifiers, serverId).getAddress()).usePlaintext().build();
         this._stub = AdminServiceGrpc.newBlockingStub(_channel);
     }
 
@@ -50,8 +50,8 @@ public class AdminFrontend {
      * @throws StatusRuntimeException
      * @throws ResponseException
      */
-    public ClassState dump(List<String> qualifiers) throws StatusRuntimeException, ResponseException {
-        getNewStubWithQualifiers(qualifiers);
+    public ClassState dump(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
+        getNewStubWithQualifiers(qualifiers, serverId);
         AdminClassServer.DumpResponse response = _stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
 
         if (response.getCode() == ResponseCode.OK) {
@@ -61,31 +61,31 @@ public class AdminFrontend {
         }
     }
 
-    public ResponseCode activate(List<String> qualifiers) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers);
+    public ResponseCode activate(List<String> qualifiers, String serverId) throws StatusRuntimeException {
+        getNewStubWithQualifiers(qualifiers,serverId);
         AdminClassServer.ActivateResponse response = _stub.activate(AdminClassServer.ActivateRequest.getDefaultInstance());
 
         return response.getCode();
     }
 
-    public ResponseCode deactivate(List<String> qualifiers) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers);
+    public ResponseCode deactivate(List<String> qualifiers, String serverId) throws StatusRuntimeException {
+        getNewStubWithQualifiers(qualifiers,serverId);
         AdminClassServer.DeactivateResponse response = _stub.deactivate(AdminClassServer.DeactivateRequest.getDefaultInstance());
 
         return response.getCode();
     }
-    public ResponseCode deactivateGossip(List<String> qualifiers) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers);
+    public ResponseCode deactivateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException {
+        getNewStubWithQualifiers(qualifiers,serverId);
         AdminClassServer.DeactivateGossipResponse response = _stub.deactivateGossip(AdminClassServer.DeactivateGossipRequest.getDefaultInstance());
         return response.getCode();
     }
-    public ResponseCode activateGossip(List<String> qualifiers) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers);
+    public ResponseCode activateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException {
+        getNewStubWithQualifiers(qualifiers,serverId);
         AdminClassServer.ActivateGossipResponse response = _stub.activateGossip(AdminClassServer.ActivateGossipRequest.getDefaultInstance());
         return response.getCode();
     }
-    public ResponseCode gossip(List<String> qualifiers) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers);
+    public ResponseCode gossip(List<String> qualifiers, String serverId) throws StatusRuntimeException {
+        getNewStubWithQualifiers(qualifiers,serverId);
         AdminClassServer.GossipResponse response = _stub.gossip(AdminClassServer.GossipRequest.getDefaultInstance());
         return response.getCode();
     }

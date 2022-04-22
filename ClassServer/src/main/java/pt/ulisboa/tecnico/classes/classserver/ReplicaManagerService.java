@@ -184,38 +184,5 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
     }
 
 
-    // TODO: Decide whether we should also use Pull strategy
-    /**
-     * propagates the primary servers state by the secondary server pulling the primary servers state
-     * @param request
-     * @param responseObserver
-     */
-    /*
-    @Override
-    public void propagateStatePull(ReplicaManagerClassServer.PropagateStatePullRequest request, StreamObserver<ReplicaManagerClassServer.PropagateStatePullResponse> responseObserver) {
-        ReplicaManagerClassServer.PropagateStatePullResponse.Builder response = ReplicaManagerClassServer.PropagateStatePullResponse.newBuilder();
 
-        if (!_properties.get("isActive")) {
-            response.setCode(ClassesDefinitions.ResponseCode.INACTIVE_SERVER);
-
-        } else {
-
-            LOGGER.info("Received propagateStatePull request");
-
-            response.setClassState(this._classObj.getClassState());
-            response.putAllTimestamps(this._timestamps);
-
-            LOGGER.info("Set response as OK");
-            response.setCode(ClassesDefinitions.ResponseCode.OK);
-
-            LOGGER.info("Sending propagateStatePull response");
-            LOGGER.info("[ReplicaManager] Updated State to: " + this._timestamps);
-
-        }
-
-        responseObserver.onNext(response.build());
-        responseObserver.onCompleted();
-    }
-
-    */
 }

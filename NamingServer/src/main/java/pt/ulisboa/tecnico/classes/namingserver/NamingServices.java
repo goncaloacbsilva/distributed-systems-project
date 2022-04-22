@@ -33,6 +33,13 @@ public class NamingServices {
             return new ArrayList<ServerEntry>();
         }
     }
+    public synchronized Collection<ServerEntry> lookupServers(String serviceName, List<String> qualifiers,String serverId) {
+        if (this._services.containsKey(serviceName)) {
+            return this._services.get(serviceName).lookupServers(qualifiers, serverId);
+        } else {
+            return new ArrayList<ServerEntry>();
+        }
+    }
 
     public ConcurrentHashMap<String, ServiceEntry> getServices() {
         return _services;

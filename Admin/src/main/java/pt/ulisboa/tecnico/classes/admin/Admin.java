@@ -44,44 +44,51 @@ public class Admin {
             System.out.printf("%n> ");
 
             String line = scanner.nextLine();
-            String commandArgs[] = line.split(" ", 2);
+            String commandArgs[] = line.split(" ", 3);
             String command = commandArgs[0];
             String qualifier;
+            String serverId;
 
             if (commandArgs.length < 2) {
                 // If no qualifier is provided assume P as default
                 qualifier = "P";
-            } else {
+                serverId = "0";
+            } else if (commandArgs.length < 3){
                 qualifier = commandArgs[1];
+                serverId = "0";
+            }else {
+                qualifier = commandArgs[1];
+                serverId = commandArgs[2];
             }
+
 
             try {
 
                 switch (command) {
 
                     case DUMP_CMD -> {
-                        ClassesDefinitions.ClassState classState = frontend.dump(List.of(qualifier));
+                        ClassesDefinitions.ClassState classState = frontend.dump(List.of(qualifier),serverId);
                         System.out.println(Stringify.format(classState));
                     }
 
                     case ACTIVATE_CMD -> {
-                        System.out.println(Stringify.format(frontend.activate(List.of(qualifier))));
+                        System.out.println(Stringify.format(frontend.activate(List.of(qualifier),serverId)));
                     }
 
                     case DEACTIVATE_CMD -> {
-                        System.out.println(Stringify.format(frontend.deactivate(List.of(qualifier))));
+                        System.out.println(Stringify.format(frontend.deactivate(List.of(qualifier),serverId)));
                     }
 
                     case DEACTIVATE_GOSSIP_CMD -> {
-                        System.out.println(Stringify.format(frontend.deactivateGossip(List.of(qualifier))));
+                        System.out.println(Stringify.format(frontend.deactivateGossip(List.of(qualifier),serverId)));
                     }
 
                     case ACTIVATE_GOSSIP_CMD -> {
-                        System.out.println(Stringify.format(frontend.activateGossip(List.of(qualifier))));
+                        System.out.println(Stringify.format(frontend.activateGossip(List.of(qualifier),serverId)));
                     }
 
                     case GOSSIP_CMD -> {
-                        System.out.println(Stringify.format(frontend.gossip(List.of(qualifier))));
+                        System.out.println(Stringify.format(frontend.gossip(List.of(qualifier),serverId)));
                     }
 
                     case EXIT_CMD -> {

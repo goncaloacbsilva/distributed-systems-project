@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -158,9 +159,11 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
         } else {
 
             LOGGER.info("Verifying state is up to date ");
-            //TODO : check if still relevant commented line
-            //_replicaManger.propagateStatePull(_properties.get("isPrimary"));
-
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             LOGGER.info("Received dump request");
             response.setClassState(this._classObj.getClassState());
         }

@@ -27,7 +27,8 @@ message DeactivateGossipResponse {
   ResponseCode code = 1;
 }
 
-message GossipRequest {}
+message GossipRequest {
+}
 
 message GossipResponse {
   ResponseCode code = 1;

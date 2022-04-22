@@ -75,8 +75,12 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
     @Override
     public void lookup(LookupRequest request, StreamObserver<LookupResponse> responseObserver) {
         LOGGER.info("Searching for: " + Arrays.toString(request.getQualifiersList().toArray()) + " at " + request.getServiceName());
-
-        Collection<ServerEntry> results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList());
+        Collection<ServerEntry> results;
+        if (!request.getServerId().isEmpty()) {
+            results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList(), request.getServerId());
+        }else {
+            results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList());
+        }
 
         LOGGER.info("Got " + results.size() + " records \n" + results);
 

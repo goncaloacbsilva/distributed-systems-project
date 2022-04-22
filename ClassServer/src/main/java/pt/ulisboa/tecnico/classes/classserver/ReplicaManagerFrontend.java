@@ -84,56 +84,29 @@ public class ReplicaManagerFrontend {
                             .toList();
 
             for (ClassServerNamingServer.ServerEntry server : servers) {
-                ReplicaManagerClassServer.PropagateStatePushRequest.Builder request = ReplicaManagerClassServer.PropagateStatePushRequest.newBuilder();
+                    ReplicaManagerClassServer.PropagateStatePushRequest.Builder request = ReplicaManagerClassServer.PropagateStatePushRequest.newBuilder();
 
-                getNewStubWithAddress(server.getAddress());
-                request.setClassState(this._classObj.getClassState());
+                    getNewStubWithAddress(server.getAddress());
+                    request.setClassState(this._classObj.getClassState());
 
-                request.setPrimaryAddress(this._address);
-                request.putAllTimestamps(this._timestampsManager.getTimestamps());
+                    request.setPrimaryAddress(this._address);
+                    request.putAllTimestamps(this._timestampsManager.getTimestamps());
 
-                ReplicaManagerClassServer.PropagateStatePushResponse response = _stub.propagateStatePush(request.build());
+                    ReplicaManagerClassServer.PropagateStatePushResponse response = _stub.propagateStatePush(request.build());
 
-                if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
-                    this._previousTimestamps = new HashMap<>(this._timestampsManager.getTimestamps());
+                    if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
+                        this._previousTimestamps = new HashMap<>(this._timestampsManager.getTimestamps());
+                    }
+
+                    LOGGER.info("[ReplicaManager Frontend] Propagated Timestamps: " + this._timestampsManager.getTimestamps());
                 }
-
-                LOGGER.info("[ReplicaManager Frontend] Propagated Timestamps: " + this._timestampsManager.getTimestamps());
             }
 
-        }
     }
+
 
     public HashMap<String, Boolean> getProperties() {
         return _properties;
     }
-    // TODO: Decide whether we should also use Pull strategy
 
-    /**
-     * propagates the primary servers state by the secondary server pulling the primary servers state
-     */
-  /*
-  public void propagateStatePull() {
-    // if primary server, class object is already up-to-date TODO: change this condition for phase 3
-    if (_properties.get("isActive")) {
-      LOGGER.info("Propagating State...");
-      Random rand = new Random();
-      List<ClassServerNamingServer.ServerEntry> servers =
-              this._nameServer.list().stream()
-                      .filter(serverEntry -> serverEntry.getQualifiersList().contains("P"))
-                      .toList();
-
-      getNewStubWithAddress(servers.get(rand.nextInt(servers.size())).getAddress());
-
-      ReplicaManagerClassServer.PropagateStatePullRequest request = ReplicaManagerClassServer.PropagateStatePullRequest.newBuilder().build();
-      ReplicaManagerClassServer.PropagateStatePullResponse response = _stub.propagateStatePull(request);
-
-      if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
-
-        this._classObj.setClassState(response.getClassState());
-        this._timestamps.putAll(response.getTimestampsMap());
-      }
-    }
-  }
-  */
 }
