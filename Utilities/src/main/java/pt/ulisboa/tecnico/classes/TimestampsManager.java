@@ -49,4 +49,20 @@ public  class TimestampsManager {
     public void putTimestamp(String address, int value) {
         this._timestamps.put(address, value);
     }
+
+    public boolean isTimestampMostUptoDate(String localAddress, Map<String, Integer> newTimestamps) {
+        for (String address : this.getTimestamps().keySet()){
+            if (!address.equals(localAddress)){
+                int currentValue = this.getTimestamps().get(address);
+
+                int newValue = newTimestamps.get(address);
+
+                if (newValue > currentValue) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

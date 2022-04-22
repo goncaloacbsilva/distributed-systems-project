@@ -149,21 +149,14 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
 
         } else {
 
-            int currentValue;
 
-            if (this._timestampsManager.getTimestamps().containsKey(request.getPrimaryAddress())) {
-                currentValue = this._timestampsManager.getTimestamps().get(request.getPrimaryAddress());
-            } else {
+
+            if (!this._timestampsManager.getTimestamps().containsKey(request.getPrimaryAddress())) {
                 this._timestampsManager.putTimestamp(request.getPrimaryAddress(), 0);
-                currentValue = 0;
             }
 
-            int newValue = request.getTimestampsMap().get(request.getPrimaryAddress());
 
-            LOGGER.info("Received propagateStatePush request \n" + "Current Version: " + currentValue + "\nIncoming: " + newValue);
-
-            // TODO: Compare Timestamps
-            if (newValue > currentValue) {
+            if (this._timestampsManager.isTimestampMostUptoDate(this._address,request.getTimestampsMap())) {
                 LOGGER.info("[ReplicaManager] Processing request...");
 
                 this.merge(request.getClassState(), this._nameServer.isPrimary(request.getPrimaryAddress()));
