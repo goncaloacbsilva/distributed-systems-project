@@ -17,7 +17,6 @@ message RegisterResponse {}
 message LookupRequest {
   string serviceName = 1;
   repeated string qualifiers = 2;
-  string serverId = 3;
 }
 
 message LookupResponse {

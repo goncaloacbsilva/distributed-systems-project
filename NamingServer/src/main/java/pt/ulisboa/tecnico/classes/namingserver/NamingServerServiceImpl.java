@@ -38,6 +38,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
     /**
      * Registers a new service for a given server identified by its address
+     *
      * @param request
      * @param responseObserver
      */
@@ -46,11 +47,10 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
     public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
         if (request.getAddress().contains(":")) {
             String[] addresParser = request.getAddress().split(":");
-            try{
+            try {
                 Integer number = Integer.valueOf(addresParser[1]);
-            }
-            catch (NumberFormatException ex){
-                responseObserver.onError(INVALID_ARGUMENT.withDescription("Not a valid server address: "  + request.getAddress()).asRuntimeException());
+            } catch (NumberFormatException ex) {
+                responseObserver.onError(INVALID_ARGUMENT.withDescription("Not a valid server address: " + request.getAddress()).asRuntimeException());
             }
             ServerEntry server = ServerEntry.newBuilder().setAddress(request.getAddress()).addAllQualifiers(request.getQualifiersList()).build();
             String serviceName = request.getServiceName();
@@ -61,14 +61,15 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
             responseObserver.onNext(RegisterResponse.getDefaultInstance());
             responseObserver.onCompleted();
-        }else {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription("Not a valid server address: "  + request.getAddress()).asRuntimeException());
+        } else {
+            responseObserver.onError(INVALID_ARGUMENT.withDescription("Not a valid server address: " + request.getAddress()).asRuntimeException());
         }
 
     }
 
     /**
      * returns all eligible servers given required server qualifiers
+     *
      * @param request
      * @param responseObserver
      */
@@ -76,11 +77,10 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
     public void lookup(LookupRequest request, StreamObserver<LookupResponse> responseObserver) {
         LOGGER.info("Searching for: " + Arrays.toString(request.getQualifiersList().toArray()) + " at " + request.getServiceName());
         Collection<ServerEntry> results;
-        if (!request.getServerId().isEmpty()) {
-            results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList(), request.getServerId());
-        }else {
-            results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList());
-        }
+
+
+        results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList());
+
 
         LOGGER.info("Got " + results.size() + " records \n" + results);
 
@@ -90,6 +90,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
     /**
      * returns all servers registered on name server
+     *
      * @param request
      * @param responseObserver
      */
@@ -113,7 +114,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
     }
 
     /**
-     *  deletes a given server for a given service
+     * deletes a given server for a given service
+     *
      * @param request
      * @param responseObserver
      */

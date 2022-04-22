@@ -28,17 +28,7 @@ public class ServiceEntry {
     }
 
 
-    public synchronized Collection<ServerEntry> lookupServers(List<String> qualifiers, String serverId) {
-        List<ServerEntry> foundServers = new ArrayList<ServerEntry>();
-        List<ServerEntry> foundServer = new ArrayList<ServerEntry>();
-        for (ServerEntry server : this._servers) {
-            if (server.getQualifiersList().containsAll(qualifiers) || qualifiers.isEmpty()) {
-                foundServers.add(server);
-            }
-        }
-        foundServer.add(foundServers.get(Integer.parseInt(serverId)));
-        return foundServer;
-    }
+
 
     public synchronized Collection<ServerEntry> lookupServers(List<String> qualifiers) {
         List<ServerEntry> foundServers = new ArrayList<ServerEntry>();

@@ -101,7 +101,6 @@ public class NameServerFrontend {
         ClassServerNamingServer.LookupRequest request =
                 ClassServerNamingServer.LookupRequest.newBuilder()
                         .setServiceName(serviceName)
-                        .setServerId(serverId)
                         .addAllQualifiers(qualifiers)
                         .build();
 
@@ -115,9 +114,8 @@ public class NameServerFrontend {
             throw new RuntimeException("No servers available");
         }
 
-        Random rand = new Random();
 
-        return servers.get(rand.nextInt(servers.size()));
+        return servers.get(Integer.parseInt(serverId));
     }
 
     public ClassServerNamingServer.ServerEntry lookup(
