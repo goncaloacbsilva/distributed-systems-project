@@ -5,8 +5,8 @@ import io.grpc.ManagedChannelBuilder;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.naming.NamingServerServiceGrpc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -61,7 +61,7 @@ public class NameServerFrontend {
     }
 
     private void updateInactiveServersList() {
-        for (String key : _cachedInactiveServers.keySet()) {
+        for (String key : new ArrayList<>(_cachedInactiveServers.keySet())) {
             int prev = _cachedInactiveServers.get(key);
             if (prev + 1 > TRY_AGAIN_COOLDOWN) {
                 _cachedInactiveServers.remove(key);
@@ -89,6 +89,26 @@ public class NameServerFrontend {
         return false;
     }
 
+    private List<ClassServerNamingServer.ServerEntry> getLookupServerList(String serviceName, List<String> qualifiers) {
+        ClassServerNamingServer.LookupRequest request =
+                ClassServerNamingServer.LookupRequest.newBuilder()
+                        .setServiceName(serviceName)
+                        .addAllQualifiers(qualifiers)
+                        .build();
+
+        ClassServerNamingServer.LookupResponse response = this._stub.lookup(request);
+
+        List<ClassServerNamingServer.ServerEntry> servers = response.getServersList().stream()
+                .filter(server -> !_cachedInactiveServers.containsKey(server.getAddress()))
+                .toList();
+
+        if (servers.isEmpty()) {
+            throw new RuntimeException("No servers available");
+        }
+
+        return servers;
+    }
+
     /**
      * request all eligible servers given required server qualifiers
      *
@@ -98,43 +118,22 @@ public class NameServerFrontend {
      */
     public ClassServerNamingServer.ServerEntry lookup(
             String serviceName, List<String> qualifiers, String serverId) {
-        ClassServerNamingServer.LookupRequest request =
-                ClassServerNamingServer.LookupRequest.newBuilder()
-                        .setServiceName(serviceName)
-                        .addAllQualifiers(qualifiers)
-                        .build();
 
-        ClassServerNamingServer.LookupResponse response = this._stub.lookup(request);
+        List<ClassServerNamingServer.ServerEntry> servers = this.getLookupServerList(serviceName, qualifiers);
 
-        List<ClassServerNamingServer.ServerEntry> servers = response.getServersList().stream()
-                .filter(server -> !_cachedInactiveServers.containsKey(server.getAddress()))
-                .toList();
+        int parsedServerId = Integer.parseInt(serverId);
 
-        if (servers.isEmpty()) {
+        if (parsedServerId >= servers.size()) {
             throw new RuntimeException("No servers available");
         }
 
-
-        return servers.get(Integer.parseInt(serverId));
+        return servers.get(parsedServerId);
     }
 
     public ClassServerNamingServer.ServerEntry lookup(
             String serviceName, List<String> qualifiers) {
-        ClassServerNamingServer.LookupRequest request =
-                ClassServerNamingServer.LookupRequest.newBuilder()
-                        .setServiceName(serviceName)
-                        .addAllQualifiers(qualifiers)
-                        .build();
 
-        ClassServerNamingServer.LookupResponse response = this._stub.lookup(request);
-
-        List<ClassServerNamingServer.ServerEntry> servers = response.getServersList().stream()
-                .filter(server -> !_cachedInactiveServers.containsKey(server.getAddress()))
-                .toList();
-
-        if (servers.isEmpty()) {
-            throw new RuntimeException("No servers available");
-        }
+        List<ClassServerNamingServer.ServerEntry> servers = this.getLookupServerList(serviceName, qualifiers);
 
         Random rand = new Random();
 

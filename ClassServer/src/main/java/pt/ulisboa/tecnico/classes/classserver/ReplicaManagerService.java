@@ -107,7 +107,7 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         }
 
         // Create Discarded list
-        for (ClassesDefinitions.Student student : discardedMap.values()) {
+        for (ClassesDefinitions.Student student : new ArrayList<>(discardedMap.values())) {
             if (enrolledMap.containsKey(student.getStudentId())) {
                 // Conflict, compare students TS
                 long enrolledTS = enrolledMap.get(student.getStudentId()).getLastChange().getSeconds();
@@ -123,7 +123,6 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
             }
         }
 
-        // Fuck yeah append everything
         mergedState.addAllEnrolled(enrolledMap.values());
         mergedState.addAllDiscarded(discardedMap.values());
 
@@ -156,7 +155,7 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
             }
 
 
-            if (this._timestampsManager.isTimestampMostUptoDate(this._address,request.getTimestampsMap())) {
+            if (this._timestampsManager.isTimestampMostUptoDate(request.getTimestampsMap())) {
                 LOGGER.info("[ReplicaManager] Processing request...");
 
                 this.merge(request.getClassState(), this._nameServer.isPrimary(request.getPrimaryAddress()));

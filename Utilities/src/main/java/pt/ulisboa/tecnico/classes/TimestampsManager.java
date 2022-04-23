@@ -2,7 +2,9 @@ package pt.ulisboa.tecnico.classes;
 
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public  class TimestampsManager {
@@ -35,7 +37,7 @@ public  class TimestampsManager {
         this._timestamps.putAll(timestamps);
     }
     public void updateTimestamps(Map<String, Integer> newTimestamps) {
-        for (String replica : this._timestamps.keySet()) {
+        for (String replica : new ArrayList<>(this._timestamps.keySet())) {
             if (newTimestamps.containsKey(replica)) {
                 int newTimestampValue = newTimestamps.get(replica);
 
@@ -50,17 +52,27 @@ public  class TimestampsManager {
         this._timestamps.put(address, value);
     }
 
-    public boolean isTimestampMostUptoDate(String localAddress, Map<String, Integer> newTimestamps) {
-        for (String address : this.getTimestamps().keySet()){
-            if (!address.equals(localAddress)){
-                int currentValue = this.getTimestamps().get(address);
+    public boolean isTimestampMostUptoDate(Map<String, Integer> newTimestamps) {
+        Map<String, Integer> incomingTimestamps = new HashMap<>(newTimestamps);
 
-                int newValue = newTimestamps.get(address);
+        for (String address : this._timestamps.keySet()){
+
+                int currentValue = this._timestamps.get(address);
+
+                if (!incomingTimestamps.containsKey(address)) {
+                    incomingTimestamps.put(address, 0);
+                }
+
+                int newValue = incomingTimestamps.get(address);
 
                 if (newValue > currentValue) {
                     return true;
                 }
-            }
+        }
+
+        // If the new timestamps have new replicas that we don't have we also need to update
+        if (incomingTimestamps.size() > this._timestamps.size()) {
+            return true;
         }
 
         return false;
