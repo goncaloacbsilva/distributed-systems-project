@@ -37,13 +37,15 @@ public  class TimestampsManager {
         this._timestamps.putAll(timestamps);
     }
     public void updateTimestamps(Map<String, Integer> newTimestamps) {
-        for (String replica : new ArrayList<>(this._timestamps.keySet())) {
-            if (newTimestamps.containsKey(replica)) {
-                int newTimestampValue = newTimestamps.get(replica);
+        for (String replica : newTimestamps.keySet()) {
+            int newTimestampValue = newTimestamps.get(replica);
 
+            if (this._timestamps.containsKey(replica)) {
                 if (this._timestamps.get(replica) < newTimestampValue) {
                     this._timestamps.put(replica, newTimestampValue);
                 }
+            } else {
+                this._timestamps.put(replica, newTimestampValue);
             }
         }
     }
