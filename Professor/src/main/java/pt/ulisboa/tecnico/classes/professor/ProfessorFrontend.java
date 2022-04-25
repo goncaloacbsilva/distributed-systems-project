@@ -34,11 +34,6 @@ public class ProfessorFrontend extends TimestampsManager {
         this._nameServer = new NameServerFrontend();
     }
 
-
-    private void getNewStubWithQualifiers(List<String> qualifiers, boolean previousIsInactive) {
-        this._stub = ProfessorServiceGrpc.newBlockingStub(_nameServer.getChannel(ProfessorServiceGrpc.SERVICE_NAME, qualifiers, previousIsInactive));
-    }
-
     /**
      * Sends a list request to the server and returns the internal class state. In case of error,
      * throws the ResponseCode as a ResponseException
@@ -47,25 +42,12 @@ public class ProfessorFrontend extends TimestampsManager {
      * @throws ResponseException
      */
     public ClassState list() throws StatusRuntimeException, ResponseException {
-        getNewStubWithQualifiers(new ArrayList<>(), false);
+        ProfessorRPCList rpcCall = new ProfessorRPCList(new ArrayList<>(), this._nameServer);
 
-        ProfessorClassServer.ListClassRequest.Builder request = ProfessorClassServer.ListClassRequest.newBuilder();
+        rpcCall.setTimestamps(this.getTimestamps());
+        rpcCall.exec();
 
-        request.putAllTimestamps(this.getTimestamps());
-
-        ProfessorClassServer.ListClassResponse response = _stub.listClass(request.build());
-
-        if (response.getCode() == ResponseCode.OK) {
-            this.updateTimestamps(response.getTimestampsMap());
-            return response.getClassState();
-        }
-        else if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(new ArrayList<>(), true);
-            return this.list();
-        }
-        else {
-            throw new ResponseException(response.getCode());
-        }
+        return rpcCall.getResponse().getClassState();
     }
 
     /**
@@ -74,36 +56,25 @@ public class ProfessorFrontend extends TimestampsManager {
      *
      * @param capacity
      */
-    public ResponseCode openEnrollmentsCommand(int capacity) throws StatusRuntimeException {
+    public ResponseCode openEnrollmentsCommand(int capacity) throws ResponseException, StatusRuntimeException {
+        ProfessorRPCOpenEnrollments rpcCall = new ProfessorRPCOpenEnrollments(List.of("P"), this._nameServer);
 
-        getNewStubWithQualifiers(List.of("P"), false);
-        ProfessorClassServer.OpenEnrollmentsRequest request = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder().setCapacity(capacity).build();
-        ProfessorClassServer.OpenEnrollmentsResponse response = _stub.openEnrollments(request);
+        rpcCall.setCapacity(capacity);
+        rpcCall.exec();
 
-        if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(List.of("P"), true);
-            return this.openEnrollmentsCommand(capacity);
-        }
-
-        return response.getCode();
+        return rpcCall.getResponse().getCode();
     }
 
     /**
      * Sends a closeEnrollments request to the server and changes the class state to not
      * allow further enrollments, prints the response code
      */
-    public ResponseCode closeEnrollmentsCommand() throws StatusRuntimeException {
+    public ResponseCode closeEnrollmentsCommand() throws ResponseException, StatusRuntimeException {
+        ProfessorRPCCloseEnrollments rpcCall = new ProfessorRPCCloseEnrollments(List.of("P"), this._nameServer);
 
-        getNewStubWithQualifiers(List.of("P"), false);
-        ProfessorClassServer.CloseEnrollmentsRequest request = ProfessorClassServer.CloseEnrollmentsRequest.getDefaultInstance();
-        ProfessorClassServer.CloseEnrollmentsResponse response = _stub.closeEnrollments(request);
+        rpcCall.exec();
 
-        if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(List.of("P"), true);
-            return this.closeEnrollmentsCommand();
-        }
-
-        return response.getCode();
+        return rpcCall.getResponse().getCode();
     }
 
     /**
@@ -112,17 +83,11 @@ public class ProfessorFrontend extends TimestampsManager {
      *
      * @param studentId
      */
-    public ResponseCode cancelEnrollmentCommand(String studentId) throws StatusRuntimeException {
+    public ResponseCode cancelEnrollmentCommand(String studentId) throws ResponseException, StatusRuntimeException {
+        ProfessorRPCCancelEnrollment rpcCall = new ProfessorRPCCancelEnrollment(List.of("P"), this._nameServer);
 
-        getNewStubWithQualifiers(List.of("P"), false);
-        ProfessorClassServer.CancelEnrollmentRequest request = ProfessorClassServer.CancelEnrollmentRequest.newBuilder().setStudentId(studentId).build();
-        ProfessorClassServer.CancelEnrollmentResponse response = _stub.cancelEnrollment(request);
+        rpcCall.exec();
 
-        if (response.getCode() == ResponseCode.INACTIVE_SERVER) {
-            getNewStubWithQualifiers(List.of("P"), true);
-            return this.cancelEnrollmentCommand(studentId);
-        }
-
-        return response.getCode();
+        return rpcCall.getResponse().getCode();
     }
 }
