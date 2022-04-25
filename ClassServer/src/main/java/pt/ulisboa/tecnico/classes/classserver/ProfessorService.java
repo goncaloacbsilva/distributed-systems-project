@@ -54,8 +54,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
         if (!_properties.get("isActive")) {
             response.setCode(ResponseCode.INACTIVE_SERVER);
 
-        }
-        else if (!_properties.get("isPrimary")) {
+        } else if (!_properties.get("isPrimary")) {
             response.setCode(ResponseCode.WRITING_NOT_SUPPORTED);
 
         } else {
@@ -80,13 +79,13 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
 
-                    
+
                     _replicaManager.updateTimestamp();
 
                 }
             }
 
-            
+
             LOGGER.info("Sending openEnrollments response");
         }
 
@@ -108,8 +107,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
         if (!_properties.get("isActive")) {
             response.setCode(ResponseCode.INACTIVE_SERVER);
 
-        }
-        else if (!_properties.get("isPrimary")) {
+        } else if (!_properties.get("isPrimary")) {
             response.setCode(ResponseCode.WRITING_NOT_SUPPORTED);
 
         } else {
@@ -159,12 +157,17 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
         } else {
 
             LOGGER.info("Verifying state is up to date ");
-            try {
-                TimeUnit.SECONDS.sleep(2);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+
+            while (this._replicaManager.getTimestampsManager().isTimestampMostUptoDate(request.getTimestampsMap())) {
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            LOGGER.info("Received dump request");
+
+
+            LOGGER.info("Received list request");
             response.setClassState(this._classObj.getClassState());
         }
 
@@ -180,14 +183,13 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
      * @param responseObserver
      */
     @Override
-    public  void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request, StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
+    public void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request, StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
         ProfessorClassServer.CancelEnrollmentResponse.Builder response = ProfessorClassServer.CancelEnrollmentResponse.newBuilder();
 
         if (!_properties.get("isActive")) {
             response.setCode(ResponseCode.INACTIVE_SERVER);
 
-        }
-        else if (!_properties.get("isPrimary")) {
+        } else if (!_properties.get("isPrimary")) {
             response.setCode(ResponseCode.WRITING_NOT_SUPPORTED);
 
         } else {

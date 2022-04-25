@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -113,8 +114,14 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
             response.setCode(ResponseCode.INACTIVE_SERVER);
 
         } else {
-
-            LOGGER.info("Received dump request");
+            while (this._replicaManager.getTimestampsManager().isTimestampMostUptoDate(request.getTimestampsMap())) {
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            LOGGER.info("Received list request");
             response.setClassState(this._classObj.getClassState());
         }
 

@@ -85,6 +85,10 @@ public class ReplicaManagerFrontend {
         LOGGER.info("[ReplicaManager Frontend] Propagated Timestamps: " + this._timestampsManager.getTimestamps());
     }
 
+    public TimestampsManager getTimestampsManager() {
+        return _timestampsManager;
+    }
+
     /**
      * propagates the primary servers state by pushing to the secondary server
      */
