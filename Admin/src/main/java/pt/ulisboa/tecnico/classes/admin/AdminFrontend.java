@@ -60,32 +60,50 @@ public class AdminFrontend {
         return rpcCall.getResponse().getClassState();
     }
 
-    public ResponseCode activate(List<String> qualifiers, String serverId) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers,serverId);
-        AdminClassServer.ActivateResponse response = _stub.activate(AdminClassServer.ActivateRequest.getDefaultInstance());
+    public ResponseCode activate(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
+        AdminRPCActivate rpcCall = new AdminRPCActivate(qualifiers, this._nameServer);
 
-        return response.getCode();
+        getNewStubWithQualifiers(qualifiers, serverId);
+        rpcCall.setStub(this._stub);
+        rpcCall.exec();
+
+        return rpcCall.getResponse().getCode();
     }
 
-    public ResponseCode deactivate(List<String> qualifiers, String serverId) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers,serverId);
-        AdminClassServer.DeactivateResponse response = _stub.deactivate(AdminClassServer.DeactivateRequest.getDefaultInstance());
+    public ResponseCode deactivate(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
+        AdminRPCDeactivate rpcCall = new AdminRPCDeactivate(qualifiers, this._nameServer);
 
-        return response.getCode();
+        getNewStubWithQualifiers(qualifiers, serverId);
+        rpcCall.setStub(this._stub);
+        rpcCall.exec();
+
+        return rpcCall.getResponse().getCode();
     }
-    public ResponseCode deactivateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers,serverId);
-        AdminClassServer.DeactivateGossipResponse response = _stub.deactivateGossip(AdminClassServer.DeactivateGossipRequest.getDefaultInstance());
-        return response.getCode();
+    public ResponseCode deactivateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
+        AdminRPCDeactivateGossip rpcCall = new AdminRPCDeactivateGossip(qualifiers, this._nameServer);
+
+        getNewStubWithQualifiers(qualifiers, serverId);
+        rpcCall.setStub(this._stub);
+        rpcCall.exec();
+
+        return rpcCall.getResponse().getCode();
     }
-    public ResponseCode activateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers,serverId);
-        AdminClassServer.ActivateGossipResponse response = _stub.activateGossip(AdminClassServer.ActivateGossipRequest.getDefaultInstance());
-        return response.getCode();
+    public ResponseCode activateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
+        AdminRPCActivateGossip rpcCall = new AdminRPCActivateGossip(qualifiers, this._nameServer);
+
+        getNewStubWithQualifiers(qualifiers, serverId);
+        rpcCall.setStub(this._stub);
+        rpcCall.exec();
+
+        return rpcCall.getResponse().getCode();
     }
-    public ResponseCode gossip(List<String> qualifiers, String serverId) throws StatusRuntimeException {
-        getNewStubWithQualifiers(qualifiers,serverId);
-        AdminClassServer.GossipResponse response = _stub.gossip(AdminClassServer.GossipRequest.getDefaultInstance());
-        return response.getCode();
+    public ResponseCode gossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
+        AdminRPCGossip rpcCall = new AdminRPCGossip(qualifiers, this._nameServer);
+
+        getNewStubWithQualifiers(qualifiers, serverId);
+        rpcCall.setStub(this._stub);
+        rpcCall.exec();
+
+        return rpcCall.getResponse().getCode();
     }
 }
