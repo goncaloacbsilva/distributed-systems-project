@@ -20,11 +20,8 @@ public class ReplicaManagerFrontend {
     private ClassStateWrapper _classObj;
     private final NameServerFrontend _nameServer;
     private static final Logger LOGGER = Logger.getLogger(ReplicaManagerFrontend.class.getName());
-
     private HashMap<String, Integer> _previousTimestamps;
-
     private TimestampsManager _timestampsManager;
-
     private ReplicaManagerGrpc.ReplicaManagerBlockingStub _stub;
     private final HashMap<String, Boolean> _properties;
     private String _address;
@@ -41,15 +38,21 @@ public class ReplicaManagerFrontend {
             LOGGER.setLevel(Level.OFF);
         }
 
-
-
         LOGGER.info("[ReplicaManager]: Init Timestamps \n" + this._timestampsManager.getTimestamps());
 
         this._previousTimestamps = new HashMap<String, Integer>(this._timestampsManager.getTimestamps());
     }
 
+    private void getNewStubWithAddress(String address) {
+        if (_channel != null) {
+            _channel.shutdown();
+        }
+        _channel = ManagedChannelBuilder.forTarget(address).usePlaintext().build();
+        this._stub = ReplicaManagerGrpc.newBlockingStub(_channel);
+    }
+
     /**
-     * updates the local timestamps
+     * updates the local timestamps when local state is changed
      */
     public void updateTimestamp() {
         this._timestampsManager.putTimestamp(this._address, this._timestampsManager.getTimestamps().get(this._address) + 1);
@@ -62,12 +65,24 @@ public class ReplicaManagerFrontend {
                         + this._timestampsManager.getTimestamps().get(this._address));
     }
 
-    private void getNewStubWithAddress(String address) {
-        if (_channel != null) {
-            _channel.shutdown();
+    /**
+     * propagates state to the supplied server
+     */
+    private void propagate(ClassServerNamingServer.ServerEntry server) {
+        ReplicaManagerClassServer.PropagateStatePushRequest.Builder request = ReplicaManagerClassServer.PropagateStatePushRequest.newBuilder();
+
+        getNewStubWithAddress(server.getAddress());
+        request.setClassState(this._classObj.getClassState());
+        request.setPrimaryAddress(this._address);
+        request.putAllTimestamps(this._timestampsManager.getTimestamps());
+
+        ReplicaManagerClassServer.PropagateStatePushResponse response = _stub.propagateStatePush(request.build());
+
+        if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
+            this._previousTimestamps = new HashMap<>(this._timestampsManager.getTimestamps());
         }
-        _channel = ManagedChannelBuilder.forTarget(address).usePlaintext().build();
-        this._stub = ReplicaManagerGrpc.newBlockingStub(_channel);
+
+        LOGGER.info("[ReplicaManager Frontend] Propagated Timestamps: " + this._timestampsManager.getTimestamps());
     }
 
     /**
@@ -84,24 +99,9 @@ public class ReplicaManagerFrontend {
                             .toList();
 
             for (ClassServerNamingServer.ServerEntry server : servers) {
-                    ReplicaManagerClassServer.PropagateStatePushRequest.Builder request = ReplicaManagerClassServer.PropagateStatePushRequest.newBuilder();
-
-                    getNewStubWithAddress(server.getAddress());
-                    request.setClassState(this._classObj.getClassState());
-
-                    request.setPrimaryAddress(this._address);
-                    request.putAllTimestamps(this._timestampsManager.getTimestamps());
-
-                    ReplicaManagerClassServer.PropagateStatePushResponse response = _stub.propagateStatePush(request.build());
-
-                    if (response.getCode() == ClassesDefinitions.ResponseCode.OK) {
-                        this._previousTimestamps = new HashMap<>(this._timestampsManager.getTimestamps());
-                    }
-
-                    LOGGER.info("[ReplicaManager Frontend] Propagated Timestamps: " + this._timestampsManager.getTimestamps());
-                }
+                propagate(server);
             }
-
+        }
     }
 
 
