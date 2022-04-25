@@ -21,11 +21,13 @@ public abstract class RPCFrontendCall {
 
         _responseCode = requestCall();
 
-        if (_responseCode == ClassesDefinitions.ResponseCode.INACTIVE_SERVER) {
-            this._previousServerIsInactive = true;
-            exec();
-        } else {
-            throw new ResponseException(_responseCode);
+        if (_responseCode != ClassesDefinitions.ResponseCode.OK) {
+            if (_responseCode == ClassesDefinitions.ResponseCode.INACTIVE_SERVER) {
+                this._previousServerIsInactive = true;
+                exec();
+            } else {
+                throw new ResponseException(_responseCode);
+            }
         }
 
     }
