@@ -70,11 +70,15 @@ public  class TimestampsManager {
                 if (newValue > currentValue) {
                     return true;
                 }
+
+                incomingTimestamps.remove(address);
         }
 
-        // If the new timestamps have new replicas that we don't have we also need to update
-        if (incomingTimestamps.size() > this._timestamps.size()) {
-            return true;
+        // If the new timestamps have new replicas that we don't have (and they have a value > 0) we also need to update
+        for (Integer value : incomingTimestamps.values()) {
+            if (value > 0) {
+                return true;
+            }
         }
 
         return false;
