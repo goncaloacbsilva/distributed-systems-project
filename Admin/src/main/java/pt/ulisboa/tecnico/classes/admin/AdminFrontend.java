@@ -51,14 +51,13 @@ public class AdminFrontend {
      * @throws ResponseException
      */
     public ClassState dump(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
-        getNewStubWithQualifiers(qualifiers, serverId);
-        AdminClassServer.DumpResponse response = _stub.dump(AdminClassServer.DumpRequest.getDefaultInstance());
+        AdminRPCDump rpcCall = new AdminRPCDump(qualifiers, this._nameServer);
 
-        if (response.getCode() == ResponseCode.OK) {
-            return response.getClassState();
-        } else {
-            throw new ResponseException(response.getCode());
-        }
+        getNewStubWithQualifiers(qualifiers, serverId);
+        rpcCall.setStub(this._stub);
+        rpcCall.exec();
+
+        return rpcCall.getResponse().getClassState();
     }
 
     public ResponseCode activate(List<String> qualifiers, String serverId) throws StatusRuntimeException {
