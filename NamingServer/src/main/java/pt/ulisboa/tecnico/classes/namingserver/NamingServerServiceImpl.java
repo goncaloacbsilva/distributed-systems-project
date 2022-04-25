@@ -15,6 +15,7 @@ import pt.ulisboa.tecnico.classes.contract.naming.NamingServerServiceGrpc;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,12 +47,13 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
     @Override
     public void register(RegisterRequest request, StreamObserver<RegisterResponse> responseObserver) {
         if (request.getAddress().contains(":")) {
-            String[] addresParser = request.getAddress().split(":");
+            String[] addressParser = request.getAddress().split(":");
             try {
-                Integer number = Integer.valueOf(addresParser[1]);
+                Integer.valueOf(addressParser[1]);
             } catch (NumberFormatException ex) {
                 responseObserver.onError(INVALID_ARGUMENT.withDescription("Not a valid server address: " + request.getAddress()).asRuntimeException());
             }
+
             ServerEntry server = ServerEntry.newBuilder().setAddress(request.getAddress()).addAllQualifiers(request.getQualifiersList()).build();
             String serviceName = request.getServiceName();
 
@@ -76,7 +78,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
     @Override
     public void lookup(LookupRequest request, StreamObserver<LookupResponse> responseObserver) {
         LOGGER.info("Searching for: " + Arrays.toString(request.getQualifiersList().toArray()) + " at " + request.getServiceName());
-        Collection<ServerEntry> results;
+        List<ServerEntry> results;
 
 
         results = this._services.lookupServers(request.getServiceName(), request.getQualifiersList());
