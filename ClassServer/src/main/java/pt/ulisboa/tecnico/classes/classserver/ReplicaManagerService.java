@@ -34,7 +34,6 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         LOGGER.info("Started with debug mode enabled");
     }
 
-
     private Map<String, ClassesDefinitions.Student> createMergeMap(List<ClassesDefinitions.Student> list) {
         Map<String, ClassesDefinitions.Student> tempProcessed = new HashMap<>();
 
@@ -71,16 +70,18 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
 
         ClassesDefinitions.ClassState.Builder mergedState = ClassesDefinitions.ClassState.newBuilder();
 
+        ClassesDefinitions.ClassState primaryState;
+
         if (isPrimary) {
             LOGGER.info("[ReplicaManager] Received state is from a primary server. Syncing Capacity and OpenEnrollments...");
-            mergedState.setCapacity(newState.getCapacity());
-            mergedState.setLastClose(newState.getLastClose());
-            mergedState.setOpenEnrollments(newState.getOpenEnrollments());
+            primaryState = newState;
         } else {
-            mergedState.setCapacity(currentState.getCapacity());
-            mergedState.setLastClose(currentState.getLastClose());
-            mergedState.setOpenEnrollments(currentState.getOpenEnrollments());
+            primaryState = currentState;
         }
+
+        mergedState.setCapacity(primaryState.getCapacity());
+        mergedState.setLastClose(primaryState.getLastClose());
+        mergedState.setOpenEnrollments(primaryState.getOpenEnrollments());
 
         // Merge maps
         Map<String, ClassesDefinitions.Student> enrolledMap = createMergeMap(allEnrolled);
@@ -89,10 +90,9 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         SortedSet<ClassesDefinitions.Student> enrolledSet = new TreeSet<>(new OrderStudentByTimestamp());
         enrolledSet.addAll(enrolledMap.values());
 
-        int enrolledCount = 0;
-
         long lastClose = mergedState.getLastClose().getSeconds();
 
+        int enrolledCount = 0;
         // Create Enrolled map
         for (ClassesDefinitions.Student student : enrolledSet) {
 
@@ -147,13 +147,6 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
             response.setCode(ClassesDefinitions.ResponseCode.INACTIVE_SERVER);
 
         } else {
-
-
-
-            if (!this._timestampsManager.getTimestamps().containsKey(request.getPrimaryAddress())) {
-                this._timestampsManager.putTimestamp(request.getPrimaryAddress(), 0);
-            }
-
 
             if (this._timestampsManager.isTimestampMostUptoDate(request.getTimestampsMap())) {
                 LOGGER.info("[ReplicaManager] Processing request...");
