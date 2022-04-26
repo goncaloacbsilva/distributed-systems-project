@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 import java.util.List;
 
+/**This class abstracts the professor closeEnrollments RPC call*/
 public class ProfessorRPCCloseEnrollments extends RPCFrontendCall {
 
     private ProfessorServiceGrpc.ProfessorServiceBlockingStub _stub;

@@ -9,6 +9,7 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import java.util.HashMap;
 import java.util.List;
 
+//**This clas abstracts the professor openEnrollments RPC call */
 public class ProfessorRPCOpenEnrollments extends RPCFrontendCall {
 
     private ProfessorServiceGrpc.ProfessorServiceBlockingStub _stub;
