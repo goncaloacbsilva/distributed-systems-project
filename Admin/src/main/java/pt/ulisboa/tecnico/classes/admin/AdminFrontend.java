@@ -7,13 +7,10 @@ import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class abstracts all the stub calls executed by the Admin client
@@ -42,10 +39,13 @@ public class AdminFrontend {
         this._stub = AdminServiceGrpc.newBlockingStub(_channel);
     }
 
+
     /**
      * Sends a dump request to the server and returns the internal class state. In case of error,
      * throws the ResponseCode as a ResponseException
      *
+     * @param qualifiers target server qualifiers
+     * @param serverId target server id (0 if qualifier is P)
      * @return ClassesDefinitions.ClassState
      * @throws StatusRuntimeException
      * @throws ResponseException
@@ -60,6 +60,16 @@ public class AdminFrontend {
         return rpcCall.getResponse().getClassState();
     }
 
+    /**
+     * Sends an activate request for the specified server.
+     * In case of error, throws the ResponseCode as a ResponseException
+     *
+     * @param qualifiers target server qualifiers
+     * @param serverId target server id (0 if qualifier is P)
+     * @return ResponseCode
+     * @throws StatusRuntimeException
+     * @throws ResponseException
+     */
     public ResponseCode activate(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
         AdminRPCActivate rpcCall = new AdminRPCActivate(qualifiers, this._nameServer);
 
@@ -70,6 +80,16 @@ public class AdminFrontend {
         return rpcCall.getResponse().getCode();
     }
 
+    /**
+     * Sends a deactivate request for the specified server.
+     * In case of error, throws the ResponseCode as a ResponseException
+     *
+     * @param qualifiers target server qualifiers
+     * @param serverId target server id (0 if qualifier is P)
+     * @return ResponseCode
+     * @throws StatusRuntimeException
+     * @throws ResponseException
+     */
     public ResponseCode deactivate(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
         AdminRPCDeactivate rpcCall = new AdminRPCDeactivate(qualifiers, this._nameServer);
 
@@ -79,6 +99,17 @@ public class AdminFrontend {
 
         return rpcCall.getResponse().getCode();
     }
+
+    /**
+     * Sends a deactivateGossip request for the specified server.
+     * In case of error, throws the ResponseCode as a ResponseException
+     *
+     * @param qualifiers target server qualifiers
+     * @param serverId target server id (0 if qualifier is P)
+     * @return ResponseCode
+     * @throws StatusRuntimeException
+     * @throws ResponseException
+     */
     public ResponseCode deactivateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
         AdminRPCDeactivateGossip rpcCall = new AdminRPCDeactivateGossip(qualifiers, this._nameServer);
 
@@ -88,6 +119,17 @@ public class AdminFrontend {
 
         return rpcCall.getResponse().getCode();
     }
+
+    /**
+     * Sends an activateGossip request for the specified server.
+     * In case of error, throws the ResponseCode as a ResponseException
+     *
+     * @param qualifiers target server qualifiers
+     * @param serverId target server id (0 if qualifier is P)
+     * @return ResponseCode
+     * @throws StatusRuntimeException
+     * @throws ResponseException
+     */
     public ResponseCode activateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
         AdminRPCActivateGossip rpcCall = new AdminRPCActivateGossip(qualifiers, this._nameServer);
 
@@ -97,6 +139,17 @@ public class AdminFrontend {
 
         return rpcCall.getResponse().getCode();
     }
+
+    /**
+     * Sends a gossip request for the specified server.
+     * In case of error, throws the ResponseCode as a ResponseException
+     *
+     * @param qualifiers target server qualifiers
+     * @param serverId target server id (0 if qualifier is P)
+     * @return ResponseCode
+     * @throws StatusRuntimeException
+     * @throws ResponseException
+     */
     public ResponseCode gossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
         AdminRPCGossip rpcCall = new AdminRPCGossip(qualifiers, this._nameServer);
 
