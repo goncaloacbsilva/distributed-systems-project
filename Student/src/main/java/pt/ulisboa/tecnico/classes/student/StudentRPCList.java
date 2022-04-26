@@ -11,6 +11,7 @@ import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import java.util.HashMap;
 import java.util.List;
 
+/** This class abstracts the student list RPC call */
 public class StudentRPCList extends RPCFrontendCall {
 
     private StudentServiceGrpc.StudentServiceBlockingStub _stub;
