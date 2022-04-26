@@ -92,8 +92,8 @@ public class ReplicaManagerFrontend {
     /**
      * propagates the primary servers state by pushing to the secondary server
      */
-    public void propagateStatePush() {
-        if (!this._previousTimestamps.equals(this._timestampsManager.getTimestamps()) && _properties.get("isActive")) {
+    public void propagateStatePush(boolean forceGossip) {
+        if ((!this._previousTimestamps.equals(this._timestampsManager.getTimestamps()) && _properties.get("isActive")) || forceGossip) {
             LOGGER.info("Propagating State...");
 
             // Propagate for all the servers except this one

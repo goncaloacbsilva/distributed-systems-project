@@ -16,7 +16,7 @@ public class GossipScheduler extends TimerTask {
     @Override
     public void run() {
         if(this._replicaManagerFrontend.getProperties().get("GossipActive")) {
-            this._replicaManagerFrontend.propagateStatePush();
+            this._replicaManagerFrontend.propagateStatePush(false);
         }
     }
 }

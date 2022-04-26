@@ -97,7 +97,7 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
     @Override
     public void gossip(AdminClassServer.GossipRequest request, StreamObserver<AdminClassServer.GossipResponse> responseObserver) {
         LOGGER.info("RECIEVED GOSSIP REQUEST");
-        this._replicaManager.propagateStatePush();
+        this._replicaManager.propagateStatePush(true);
 
         AdminClassServer.GossipResponse.Builder response = AdminClassServer.GossipResponse.newBuilder();
         responseObserver.onNext(response.setCode(ResponseCode.OK).build());
