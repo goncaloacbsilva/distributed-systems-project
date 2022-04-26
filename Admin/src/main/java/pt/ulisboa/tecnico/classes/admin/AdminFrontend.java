@@ -51,7 +51,7 @@ public class AdminFrontend {
      * @throws ResponseException
      */
     public ClassState dump(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
-        AdminRPCDump rpcCall = new AdminRPCDump(qualifiers, this._nameServer);
+        AdminRPCDump rpcCall = new AdminRPCDump(qualifiers);
 
         getNewStubWithQualifiers(qualifiers, serverId);
         rpcCall.setStub(this._stub);
@@ -71,7 +71,7 @@ public class AdminFrontend {
      * @throws ResponseException
      */
     public ResponseCode activate(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
-        AdminRPCActivate rpcCall = new AdminRPCActivate(qualifiers, this._nameServer);
+        AdminRPCActivate rpcCall = new AdminRPCActivate(qualifiers);
 
         getNewStubWithQualifiers(qualifiers, serverId);
         rpcCall.setStub(this._stub);
@@ -91,7 +91,7 @@ public class AdminFrontend {
      * @throws ResponseException
      */
     public ResponseCode deactivate(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
-        AdminRPCDeactivate rpcCall = new AdminRPCDeactivate(qualifiers, this._nameServer);
+        AdminRPCDeactivate rpcCall = new AdminRPCDeactivate(qualifiers);
 
         getNewStubWithQualifiers(qualifiers, serverId);
         rpcCall.setStub(this._stub);
@@ -111,7 +111,7 @@ public class AdminFrontend {
      * @throws ResponseException
      */
     public ResponseCode deactivateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
-        AdminRPCDeactivateGossip rpcCall = new AdminRPCDeactivateGossip(qualifiers, this._nameServer);
+        AdminRPCDeactivateGossip rpcCall = new AdminRPCDeactivateGossip(qualifiers);
 
         getNewStubWithQualifiers(qualifiers, serverId);
         rpcCall.setStub(this._stub);
@@ -131,7 +131,7 @@ public class AdminFrontend {
      * @throws ResponseException
      */
     public ResponseCode activateGossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
-        AdminRPCActivateGossip rpcCall = new AdminRPCActivateGossip(qualifiers, this._nameServer);
+        AdminRPCActivateGossip rpcCall = new AdminRPCActivateGossip(qualifiers);
 
         getNewStubWithQualifiers(qualifiers, serverId);
         rpcCall.setStub(this._stub);
@@ -151,7 +151,7 @@ public class AdminFrontend {
      * @throws ResponseException
      */
     public ResponseCode gossip(List<String> qualifiers, String serverId) throws StatusRuntimeException, ResponseException {
-        AdminRPCGossip rpcCall = new AdminRPCGossip(qualifiers, this._nameServer);
+        AdminRPCGossip rpcCall = new AdminRPCGossip(qualifiers);
 
         getNewStubWithQualifiers(qualifiers, serverId);
         rpcCall.setStub(this._stub);
