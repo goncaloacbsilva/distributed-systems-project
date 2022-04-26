@@ -80,7 +80,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     LOGGER.info("Set response as OK");
 
 
-                    _replicaManager.updateTimestamp();
+                    _replicaManager.updateLocalTimestamp();
 
                 }
             }
@@ -129,7 +129,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
 
-                    _replicaManager.updateTimestamp();
+                    _replicaManager.updateLocalTimestamp();
                 }
             }
 
@@ -228,7 +228,7 @@ public class ProfessorService extends ProfessorServiceGrpc.ProfessorServiceImplB
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
 
-                    _replicaManager.updateTimestamp();
+                    _replicaManager.updateLocalTimestamp();
                 } else {
                     response.setCode(ResponseCode.NON_EXISTING_STUDENT);
                     LOGGER.info("Set response as non existing student");
