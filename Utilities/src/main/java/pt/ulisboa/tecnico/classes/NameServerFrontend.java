@@ -17,7 +17,7 @@ public class NameServerFrontend {
     private ClassServerNamingServer.ServerEntry _cachedServer;
     private HashMap<String, Integer> _cachedInactiveServers;
 
-    private static final Integer TRY_AGAIN_COOLDOWN = 4;
+    private static final Integer TRY_AGAIN_COOLDOWN = 2;
 
     public NameServerFrontend() {
         ManagedChannel channel =
