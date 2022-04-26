@@ -12,6 +12,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * ReplicaManager related service responsible for handling incoming propagated states and
+ * merging them with the current state solving conflicts that may appear during the merge operation
+ */
 public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImplBase {
     private ClassStateWrapper _classObj;
     private TimestampsManager _timestampsManager;
@@ -20,6 +24,18 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
     private static final Logger LOGGER = Logger.getLogger(ReplicaManagerService.class.getName());
     private String _address;
 
+    /**
+     * Creates an instance of ReplicaManagerService
+     *
+     * @see ReplicaManagerService
+     *
+     * @param classObj ClassStateWrapper instance
+     * @param enableDebug debug flag (enabled if true)
+     * @param properties server properties HashMap
+     * @param nameServer NameServerFrontend instance
+     * @param address String of local address
+     * @param timestamps server local timestamps HashMap
+     */
     public ReplicaManagerService(ClassStateWrapper classObj, boolean enableDebug, HashMap<String, Boolean> properties, NameServerFrontend nameServer, String address, HashMap<String, Integer> timestamps) {
         this._classObj = classObj;
         this._timestampsManager = new TimestampsManager(timestamps);
@@ -34,6 +50,13 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         LOGGER.info("Started with debug mode enabled");
     }
 
+    /**
+     * Creates a 'merge map' with the supplied student list.
+     * In this map each key (studentId) is associated to the most recent student object
+     *
+     * @param list
+     * @return
+     */
     private Map<String, ClassesDefinitions.Student> createMergeMap(List<ClassesDefinitions.Student> list) {
         Map<String, ClassesDefinitions.Student> tempProcessed = new HashMap<>();
 
@@ -44,6 +67,7 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
                 long currentTS = tempProcessed.get(student.getStudentId()).getLastChange().getSeconds();
                 long newTS = student.getLastChange().getSeconds();
 
+                // If new student object is more recent than the current, replace current object with the new one
                 if (currentTS < newTS) {
                     tempProcessed.put(student.getStudentId(), student);
                 }
@@ -55,23 +79,30 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         return tempProcessed;
     }
 
+    /**
+     * Merges current local state with the supplied state
+     * @param newState incoming state
+     * @param isPrimary true if the incoming state is from a Primary server
+     */
     private void merge(ClassesDefinitions.ClassState newState, boolean isPrimary) {
+
         ClassesDefinitions.ClassState currentState = this._classObj.getClassState();
+        ClassesDefinitions.ClassState primaryState;
 
+        // Merged state builder
+        ClassesDefinitions.ClassState.Builder mergedState = ClassesDefinitions.ClassState.newBuilder();
+
+        // Create a list with all the enrolled students from both states (can have repeated students)
         LOGGER.info("[ReplicaManager] (Enrolled CURRENT): \n" + currentState.getEnrolledList() + "\n[ReplicaManager] (Enrolled NEW): \n" + newState.getEnrolledList());
-
         List<ClassesDefinitions.Student> allEnrolled = new ArrayList<>(currentState.getEnrolledList());
         allEnrolled.addAll(newState.getEnrolledList());
 
+        // Create a list with all the discarded students from both states (can have repeated students)
         LOGGER.info("[ReplicaManager] (Discarded CURRENT): \n" + currentState.getDiscardedList() + "\n[ReplicaManager] (Discarded NEW): \n" + newState.getDiscardedList());
-
         List<ClassesDefinitions.Student> allDiscarded = new ArrayList<>(currentState.getDiscardedList());
         allDiscarded.addAll(newState.getDiscardedList());
 
-        ClassesDefinitions.ClassState.Builder mergedState = ClassesDefinitions.ClassState.newBuilder();
-
-        ClassesDefinitions.ClassState primaryState;
-
+        // If incoming state is from a primary server we need to update current state capacity, lastClose and openEnrollments using that state
         if (isPrimary) {
             LOGGER.info("[ReplicaManager] Received state is from a primary server. Syncing Capacity and OpenEnrollments...");
             primaryState = newState;
@@ -83,21 +114,27 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
         mergedState.setLastClose(primaryState.getLastClose());
         mergedState.setOpenEnrollments(primaryState.getOpenEnrollments());
 
-        // Merge maps
+        // Get lastClose timestamp
+        long lastClose = mergedState.getLastClose().getSeconds();
+
+        // Create merge maps (Read JavaDoc)
         Map<String, ClassesDefinitions.Student> enrolledMap = createMergeMap(allEnrolled);
         Map<String, ClassesDefinitions.Student> discardedMap = createMergeMap(allDiscarded);
 
+        // Create SortedSet where Students are ordered by their 'lastChange' timestamp
         SortedSet<ClassesDefinitions.Student> enrolledSet = new TreeSet<>(new OrderStudentByTimestamp());
         enrolledSet.addAll(enrolledMap.values());
 
-        long lastClose = mergedState.getLastClose().getSeconds();
-
+        // Counter for keep tracking of the enrolled students
         int enrolledCount = 0;
-        // Create Enrolled map
+
+        // Merge Enrollments
         for (ClassesDefinitions.Student student : enrolledSet) {
 
+            // Get student last change
             long lastChange = student.getLastChange().getSeconds();
 
+            // If enrollments were closed after student enrollment or class is already full, discard student
             if ((!mergedState.getOpenEnrollments() && lastChange > lastClose) || (enrolledCount + 1 > mergedState.getCapacity())) {
                 discardedMap.put(student.getStudentId(), student);
                 enrolledMap.remove(student.getStudentId());
@@ -106,10 +143,13 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
             }
         }
 
-        // Create Discarded list
+        // Merge Discarded
         for (ClassesDefinitions.Student student : new ArrayList<>(discardedMap.values())) {
+
+            // Check if enrolled students map contains discarded student
             if (enrolledMap.containsKey(student.getStudentId())) {
-                // Conflict, compare students TS
+
+                // Conflict, compare students Timestamps
                 long enrolledTS = enrolledMap.get(student.getStudentId()).getLastChange().getSeconds();
                 long discardedTS = student.getLastChange().getSeconds();
 
@@ -123,18 +163,19 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
             }
         }
 
+        // Add final enrolled and discarded students to mergedState
         mergedState.addAllEnrolled(enrolledMap.values());
         mergedState.addAllDiscarded(discardedMap.values());
 
         LOGGER.info("FINAL MERGED STATE: \n" + mergedState);
 
-
+        // Overwrite current local state with the mergedState
         this._classObj.setClassState(mergedState.build());
     }
 
 
     /**
-     * propagates the primary servers state by pushing to the secondary server
+     * Receives and handle incoming propagated state, if necessary merges incoming state with the current one
      *
      * @param request
      * @param responseObserver
@@ -151,8 +192,10 @@ public class ReplicaManagerService extends ReplicaManagerGrpc.ReplicaManagerImpl
             if (this._timestampsManager.isTimestampMostUptoDate(request.getTimestampsMap())) {
                 LOGGER.info("[ReplicaManager] Processing request...");
 
+                // Merge states
                 this.merge(request.getClassState(), this._nameServer.isPrimary(request.getPrimaryAddress()));
 
+                // Update local timestamps
                 this._timestampsManager.updateTimestamps(request.getTimestampsMap());
 
                 LOGGER.info("Set response as OK");
