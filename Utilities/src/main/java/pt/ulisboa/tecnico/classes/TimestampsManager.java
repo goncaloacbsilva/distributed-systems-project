@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class manages the timestamp of each individual server
+ */
 public  class TimestampsManager {
     private HashMap<String, Integer> _timestamps;
 
@@ -36,6 +39,11 @@ public  class TimestampsManager {
     public void setTimestamps(Map<String, Integer> timestamps) {
         this._timestamps.putAll(timestamps);
     }
+
+    /**
+     * compares incoming timestamps to current ones and updates only the out of date timestamps
+     * @param newTimestamps incoming timestamps
+     */
     public void updateTimestamps(Map<String, Integer> newTimestamps) {
         for (String replica : newTimestamps.keySet()) {
             int newTimestampValue = newTimestamps.get(replica);
@@ -54,6 +62,11 @@ public  class TimestampsManager {
         this._timestamps.put(address, value);
     }
 
+    /**
+     * checks whether local state timestamps are updated
+     * @param newTimestamps timestamps from the incoming state
+     * @return boolean that dictates whether timestamps are up-to-date or not
+     */
     public boolean isTimestampMostUptoDate(Map<String, Integer> newTimestamps) {
         Map<String, Integer> incomingTimestamps = new HashMap<>(newTimestamps);
 
