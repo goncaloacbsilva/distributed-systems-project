@@ -9,6 +9,7 @@ import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import java.util.HashMap;
 import java.util.List;
 
+/** This class abstracts the enroll RPC call */
 public class StudentRPCEnroll extends RPCFrontendCall {
 
     private StudentServiceGrpc.StudentServiceBlockingStub _stub;
