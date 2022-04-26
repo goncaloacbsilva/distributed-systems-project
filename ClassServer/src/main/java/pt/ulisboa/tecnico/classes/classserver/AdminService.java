@@ -17,7 +17,6 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
 
     private final ClassStateWrapper _classObj;
     private final HashMap<String, Boolean> _properties;
-
     private final ReplicaManagerFrontend _replicaManager;
     private static final Logger LOGGER = Logger.getLogger(AdminService.class.getName());
 
@@ -49,16 +48,21 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
      */
     @Override
     public void dump(AdminClassServer.DumpRequest request, StreamObserver<AdminClassServer.DumpResponse> responseObserver) {
-
         LOGGER.info("Received dump request");
         AdminClassServer.DumpResponse.Builder response = AdminClassServer.DumpResponse.newBuilder();
         responseObserver.onNext(response.setClassState(this._classObj.getClassState()).build());
         responseObserver.onCompleted();
     }
 
+    /**
+     * "activate" remote procedure call. Receives ActivateRequest from the admin client and activates the server.
+     * Sends an OK ResponseCode through a StreamObserver
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void activate(AdminClassServer.ActivateRequest request, StreamObserver<AdminClassServer.ActivateResponse> responseObserver) {
-
         LOGGER.info("SERVER IS NOW ONLINE");
         AdminClassServer.ActivateResponse.Builder response = AdminClassServer.ActivateResponse.newBuilder();
         _properties.put("isActive", true);
@@ -66,9 +70,14 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * "deactivate" remote procedure call. Receives DeactivateRequest from the admin client and puts the server unavailable.
+     * Sends an OK ResponseCode through a StreamObserver
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void deactivate(AdminClassServer.DeactivateRequest request, StreamObserver<AdminClassServer.DeactivateResponse> responseObserver) {
-
         LOGGER.info("SERVER IS NOW OFFLINE");
         AdminClassServer.DeactivateResponse.Builder response = AdminClassServer.DeactivateResponse.newBuilder();
         this._properties.put("isActive", false);
@@ -76,6 +85,12 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * "activateGossip" remote procedure call. Receives ActivateGossipRequest from the admin client and activates gossip scheduler.
+     * Sends an OK ResponseCode through a StreamObserver
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void activateGossip(AdminClassServer.ActivateGossipRequest request, StreamObserver<AdminClassServer.ActivateGossipResponse> responseObserver) {
         LOGGER.info("GOSSIP IS NOW ACTIVE");
@@ -85,6 +100,12 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * "deactivateGossip" remote procedure call. Receives DeactivateGossipRequest from the admin client and deactivates gossip scheduler.
+     * Sends an OK ResponseCode through a StreamObserver
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void deactivateGossip(AdminClassServer.DeactivateGossipRequest request, StreamObserver<AdminClassServer.DeactivateGossipResponse> responseObserver) {
         LOGGER.info("GOSSIP IS NOW DEACTIVATED");
@@ -94,9 +115,15 @@ public class AdminService extends AdminServiceGrpc.AdminServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     * "gossip" remote procedure call. Receives GossipRequest from the admin client and forces propagateState.
+     * Sends an OK ResponseCode through a StreamObserver
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void gossip(AdminClassServer.GossipRequest request, StreamObserver<AdminClassServer.GossipResponse> responseObserver) {
-        LOGGER.info("RECIEVED GOSSIP REQUEST");
+        LOGGER.info("RECIEVED FORCED GOSSIP REQUEST");
         this._replicaManager.propagateStatePush(true);
 
         AdminClassServer.GossipResponse.Builder response = AdminClassServer.GossipResponse.newBuilder();
