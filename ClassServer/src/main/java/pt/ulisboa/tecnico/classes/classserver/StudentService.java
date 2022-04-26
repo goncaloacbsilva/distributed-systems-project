@@ -88,7 +88,7 @@ public class StudentService extends StudentServiceGrpc.StudentServiceImplBase {
 
                     response.setCode(ResponseCode.OK);
                     LOGGER.info("Set response as OK");
-                    _replicaManager.updateTimestamp();
+                    _replicaManager.updateLocalTimestamp();
                 }
 
                 LOGGER.info("Sending enroll response");
