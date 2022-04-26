@@ -4,7 +4,6 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
-import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,12 +62,19 @@ public class ClassServer {
 
     // Initialize Class Object, replica manager frontend and all the services
     ClassStateWrapper classObj = new ClassStateWrapper();
-    final ReplicaManagerFrontend replicaManagerFrontend = new ReplicaManagerFrontend(classObj, _enableLogging, _properties, nameServer, address, _timestamps);
+    final ReplicaManagerFrontend replicaManagerFrontend =
+        new ReplicaManagerFrontend(
+            classObj, _enableLogging, _properties, nameServer, address, _timestamps);
 
-    final BindableService adminService = new AdminService(classObj, _enableLogging, _properties, replicaManagerFrontend);
-    final BindableService professorService = new ProfessorService(classObj, _enableLogging, _properties, replicaManagerFrontend);
-    final BindableService replicaManagerService = new ReplicaManagerService(classObj, _enableLogging, _properties, nameServer, address, _timestamps);
-    final BindableService studentService = new StudentService(classObj, _enableLogging, _properties, replicaManagerFrontend);
+    final BindableService adminService =
+        new AdminService(classObj, _enableLogging, _properties, replicaManagerFrontend);
+    final BindableService professorService =
+        new ProfessorService(classObj, _enableLogging, _properties, replicaManagerFrontend);
+    final BindableService replicaManagerService =
+        new ReplicaManagerService(
+            classObj, _enableLogging, _properties, nameServer, address, _timestamps);
+    final BindableService studentService =
+        new StudentService(classObj, _enableLogging, _properties, replicaManagerFrontend);
 
     Server server =
         ServerBuilder.forPort(port)
@@ -78,20 +84,30 @@ public class ClassServer {
             .addService(replicaManagerService)
             .build();
 
-
     Timer time = new Timer();
     GossipScheduler gossipScheduler = new GossipScheduler(replicaManagerFrontend);
     time.schedule(gossipScheduler, 0, 2000); // propagates state every 2 seconds
 
-    server.getServices().forEach(serverService -> {
-      nameServer.registerServer(serverService.getServiceDescriptor().getName(), address, qualifiers);
-    });
+    server
+        .getServices()
+        .forEach(
+            serverService -> {
+              nameServer.registerServer(
+                  serverService.getServiceDescriptor().getName(), address, qualifiers);
+            });
 
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      server.getServices().forEach(serverService -> {
-        nameServer.deleteServer(serverService.getServiceDescriptor().getName(), address);
-      });
-    }));
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  server
+                      .getServices()
+                      .forEach(
+                          serverService -> {
+                            nameServer.deleteServer(
+                                serverService.getServiceDescriptor().getName(), address);
+                          });
+                }));
 
     // Start the server
     server.start();

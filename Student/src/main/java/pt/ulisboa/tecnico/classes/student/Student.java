@@ -51,7 +51,7 @@ public class Student {
             System.out.printf("%n> ");
 
             String line = scanner.nextLine();
-            String commandArgs[] = line.split(" ", 2);
+            String[] commandArgs = line.split(" ", 2);
             String command = commandArgs[0];
 
             try {

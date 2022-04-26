@@ -1,11 +1,8 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-import io.grpc.ManagedChannel;
-import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 import java.util.Scanner;
 
@@ -33,7 +30,7 @@ public class Professor {
         while (true) {
             System.out.printf("%n> ");
             String line = lineReader.nextLine();
-            String commandArgs[] = line.split(" ", 2);
+            String[] commandArgs = line.split(" ", 2);
             String command = commandArgs[0];
 
             try {

@@ -4,8 +4,6 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
-import java.util.Optional;
-
 public class NamingServer {
 
   public static void main(String[] args) throws Exception {
@@ -34,6 +32,5 @@ public class NamingServer {
     System.out.println("Server started at " + server.getPort());
 
     server.awaitTermination();
-
   }
 }

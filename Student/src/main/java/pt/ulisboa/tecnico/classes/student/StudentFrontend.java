@@ -4,21 +4,19 @@ import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.classes.NameServerFrontend;
 import pt.ulisboa.tecnico.classes.ResponseException;
 import pt.ulisboa.tecnico.classes.TimestampsManager;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.Student;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.Student;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /** This class abstracts all the stub calls executed by the Student client */
 public class StudentFrontend extends TimestampsManager {
 
   private final NameServerFrontend _nameServer;
-  private StudentServiceGrpc.StudentServiceBlockingStub _stub;
   private final Student _student;
+  private StudentServiceGrpc.StudentServiceBlockingStub _stub;
 
   /**
    * creates an instance of StudentFrontend
@@ -29,7 +27,8 @@ public class StudentFrontend extends TimestampsManager {
   public StudentFrontend(String studentID, String studentName) {
     super(new NameServerFrontend());
     this._nameServer = new NameServerFrontend();
-    this._student = Student.newBuilder().setStudentId(studentID).setStudentName(studentName).build();
+    this._student =
+        Student.newBuilder().setStudentId(studentID).setStudentName(studentName).build();
   }
 
   /**

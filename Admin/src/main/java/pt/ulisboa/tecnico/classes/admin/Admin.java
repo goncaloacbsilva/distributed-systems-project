@@ -7,8 +7,21 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import java.util.List;
 import java.util.Scanner;
 
+
+
 /**
- * Admin client class
+ * Admin Console
+ *
+ * Syntax: <command> <qualifier> <index>
+ *
+ * qualifier: [P,S]
+ * index: 0,1,2,...
+ *
+ * Example: activate S 1
+ * Note: Index is 0 and qualifier is P by default.
+ *       > activate
+ *           is equivalent to
+ *       > activate P 0
  */
 public class Admin {
 
@@ -44,7 +57,7 @@ public class Admin {
             System.out.printf("%n> ");
 
             String line = scanner.nextLine();
-            String commandArgs[] = line.split(" ", 3);
+            String[] commandArgs = line.split(" ", 3);
             String command = commandArgs[0];
             String qualifier;
             String serverId;
